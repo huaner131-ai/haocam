@@ -79,9 +79,11 @@ export class FaceTracker {
       this.emit({ phase: 'loading', message: 'detector (tiny face)…', progress: 0.35 });
       await fa.nets.tinyFaceDetector.loadFromUri(MODEL_DIR);
       this.emit({ phase: 'loading', message: 'face mesh 68 titik…', progress: 0.7 });
-      await fa.nets[this.opts.accuracy === 'fast' ? 'faceLandmark68TinyNet' : 'faceLandmark68Net'].loadFromUri(MODEL_DIR);
+      // muat DUA varian (tiny + full) supaya toggle akurasi di UI instan & tidak gagal
+      await fa.nets.faceLandmark68TinyNet.loadFromUri(MODEL_DIR);
+      await fa.nets.faceLandmark68Net.loadFromUri(MODEL_DIR);
       if (this.opts.useExpressions) {
-        this.emit({ phase: 'loading', message: 'face expression…', progress: 0.9 });
+        this.emit({ phase: 'loading', message: 'face expression (senyum/kedip)…', progress: 0.92 });
         await fa.nets.faceExpressionNet.loadFromUri(MODEL_DIR);
       }
       this.ready = true;
