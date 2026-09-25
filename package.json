@@ -1,0 +1,27 @@
+{
+  "name": "haocam",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "HaoCam — real-time beauty & AR camera di browser (WebGL2 + on-device face mesh)",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "typecheck": "tsc -b --force",
+    "test": "esbuild test/logic.ts --bundle --format=esm --platform=node --outfile=.tmp-logic.mjs --log-level=error && node .tmp-logic.mjs"
+  },
+  "dependencies": {
+    "d3-delaunay": "^6.0.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/d3-delaunay": "^6.0.4",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}
