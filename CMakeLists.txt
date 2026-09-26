@@ -264,16 +264,18 @@ if(HAOCAM_BUILD_APP)
     qt_add_qml_module(haocam
         URI HaoCam
         VERSION 1.0
+        # NOTE: QML_FILES must stay RELATIVE - absolute paths make Qt's
+        # resource system demand QT_RESOURCE_ALIAS on every file (Qt 6.11).
         QML_FILES
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/Main.qml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/CameraView.qml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/CameraPanel.qml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/BeautyPanel.qml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/MakeupPanel.qml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/ARPanel.qml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/FilterPanel.qml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/RecordingPanel.qml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/SettingsPanel.qml"
+            ui/qml/Main.qml
+            ui/qml/CameraView.qml
+            ui/qml/CameraPanel.qml
+            ui/qml/BeautyPanel.qml
+            ui/qml/MakeupPanel.qml
+            ui/qml/ARPanel.qml
+            ui/qml/FilterPanel.qml
+            ui/qml/RecordingPanel.qml
+            ui/qml/SettingsPanel.qml
         NO_PLUGIN
     )
 
