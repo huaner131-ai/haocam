@@ -175,12 +175,17 @@ if(HAOCAM_HAS_FACEBETTER)
     target_compile_definitions(haocam_core PUBLIC HAOCAM_HAS_FACEBETTER)
     target_include_directories(haocam_core PUBLIC "${HAOCAM_FACEBETTER_DIR}/include")
     target_link_libraries(haocam_core PUBLIC "${HAOCAM_FACEBETTER_DIR}/lib/facebetter.lib")
-    # Ship the runtime DLL + resource pack next to the app when present.
+    # Ship the runtime DLL beside the app executable when present.
     if(EXISTS "${HAOCAM_FACEBETTER_DIR}/lib/facebetter.dll")
+        if(HAOCAM_BUILD_APP)
+            set(HAOCAM_FB_DLL_DEST "$<TARGET_FILE_DIR:haocam>")
+        else()
+            set(HAOCAM_FB_DLL_DEST "$<TARGET_FILE_DIR:haocam_core>")
+        endif()
         add_custom_command(TARGET haocam_core POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${HAOCAM_FACEBETTER_DIR}/lib/facebetter.dll"
-                "$<TARGET_FILE_DIR:haocam_core>/facebetter.dll")
+                "${HAOCAM_FB_DLL_DEST}/facebetter.dll")
     endif()
 endif()
 
@@ -211,50 +216,64 @@ endif()
 # ---------------------------------------------------------------------------
 if(HAOCAM_BUILD_APP)
     find_package(Qt6 6.6 REQUIRED COMPONENTS Gui Qml Quick QuickControls2)
+    # Qt >= 6.10 moved private-module targets (Qt6::GuiPrivate, used by
+    # VideoView for <rhi/qrhi.h>) into their own find_package component.
+    # Older Qt versions define the target directly - handle both.
+    if(NOT TARGET Qt6::GuiPrivate)
+        find_package(Qt6 QUIET COMPONENTS GuiPrivate)
+    endif()
 
     qt_standard_project_setup()
 
-    qt_add_executable(haocam
-        app/main.cpp
-        app/App.h
-        app/App.cpp
-        app/MainWindow.h
-        app/MainWindow.cpp
-        ui/controllers/EngineController.h
-        ui/controllers/EngineController.cpp
-        ui/controllers/CameraController.h
-        ui/controllers/CameraController.cpp
-        ui/controllers/BeautyController.h
-        ui/controllers/BeautyController.cpp
-        ui/controllers/FilterController.h
-        ui/controllers/FilterController.cpp
-        ui/controllers/DiagnosticsController.h
-        ui/controllers/DiagnosticsController.cpp
-        ui/controllers/VideoView.h
-        ui/controllers/VideoView.cpp
+    # NOTE: source paths must be ABSOLUTE - Qt 6.11's qt_add_executable
+    # resolves relative paths against the build directory.
+    set(HAOCAM_APP_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/app/main.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/app/App.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/app/App.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/app/MainWindow.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/app/MainWindow.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/EngineController.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/EngineController.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/CameraController.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/CameraController.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/BeautyController.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/BeautyController.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/FilterController.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/FilterController.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/DiagnosticsController.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/DiagnosticsController.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/VideoView.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/VideoView.cpp"
     )
+
+    qt_add_executable(haocam ${HAOCAM_APP_SOURCES})
 
     target_link_libraries(haocam PRIVATE
         haocam_core
-        Qt6::GuiPrivate   # rhi/qrhi.h (QRhiTexture::createFrom import) - used by VideoView
         Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
     )
+    if(TARGET Qt6::GuiPrivate)
+        target_link_libraries(haocam PRIVATE Qt6::GuiPrivate)
+    else()
+        target_link_libraries(haocam PRIVATE Qt6::Gui)
+    endif()
 
     qt_add_qml_module(haocam
         URI HaoCam
         VERSION 1.0
         QML_FILES
-            ui/qml/Main.qml
-            ui/qml/CameraView.qml
-            ui/qml/CameraPanel.qml
-            ui/qml/BeautyPanel.qml
-            ui/qml/MakeupPanel.qml
-            ui/qml/ARPanel.qml
-            ui/qml/FilterPanel.qml
-            ui/qml/RecordingPanel.qml
-            ui/qml/SettingsPanel.qml
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/Main.qml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/CameraView.qml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/CameraPanel.qml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/BeautyPanel.qml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/MakeupPanel.qml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/ARPanel.qml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/FilterPanel.qml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/RecordingPanel.qml"
+            "${CMAKE_CURRENT_SOURCE_DIR}/ui/qml/SettingsPanel.qml"
         NO_PLUGIN
     )
 
