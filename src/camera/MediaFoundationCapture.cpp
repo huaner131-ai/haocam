@@ -1,5 +1,6 @@
 #include "camera/MediaFoundationCapture.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <memory>

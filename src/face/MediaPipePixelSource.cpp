@@ -1,6 +1,8 @@
 #include "face/MediaPipePixelSource.h"
 
+#include <algorithm>
 #include <chrono>
+#include <cstring>
 
 #include "core/logging/Logger.h"
 #include "graphics/D3D11/D3D11Shader.h"

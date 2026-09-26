@@ -1,5 +1,6 @@
 #include "camera/CameraManager.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 
