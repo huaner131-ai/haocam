@@ -13,10 +13,13 @@ function(haocam_embed_shader shader_path)
 
     add_custom_command(
         OUTPUT "${gen_header}"
-        COMMAND ${CMAKE_COMMAND}
-            -DINPUT="${shader_path}"
-            -DOUTPUT="${gen_header}"
-            -DARRAY_NAME="${array_name}"
+        # NOTE: each -D definition must be quoted as a WHOLE token.
+        # Writing -DINPUT="${path}" embeds literal quote characters in the
+        # argument under MSBuild custom commands (file open would fail).
+        COMMAND "${CMAKE_COMMAND}"
+            "-DINPUT=${shader_path}"
+            "-DOUTPUT=${gen_header}"
+            "-DARRAY_NAME=${array_name}"
             -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/EmbedFile.cmake"
         DEPENDS "${shader_path}"
         COMMENT "Embedding ${name_we}${ext}"
