@@ -7,6 +7,16 @@ import HaoCam
 import HaoCam.Controllers
 
 Rectangle {
+    // Panel palette (mirrors Main.qml; id stays previewRoot).
+    readonly property color bg: "#101014"
+    readonly property color surface: "#17171d"
+    readonly property color surfaceAlt: "#1d1d25"
+    readonly property color stroke: "#2a2a33"
+    readonly property color text: "#e8e8ee"
+    readonly property color textDim: "#8b8b98"
+    readonly property color accent: "#ff4d79"
+    readonly property color accentAlt: "#4dd8ff"
+
     id: previewRoot
 
     required property bool settingsVisible
@@ -38,7 +48,7 @@ Rectangle {
         width: bannerRow.implicitWidth + 28
         height: 34
         color: "#cc17171d"
-        border.color: previewRoot.statusBannerText.length > 0 ? "#c85a2f" : root.accent
+        border.color: previewRoot.statusBannerText.length > 0 ? "#c85a2f" : previewRoot.accent
         border.width: 1
 
         RowLayout {
@@ -50,7 +60,7 @@ Rectangle {
                 color: CameraController.state === "Reconnecting" ? "#ffb020"
                      : CameraController.state === "Failed" ? "#ff4d4d"
                      : CameraController.state === "NoDevice" ? "#8b8b98"
-                     : root.accentAlt
+                     : previewRoot.accentAlt
             }
             Label {
                 text: {
@@ -61,7 +71,7 @@ Rectangle {
                     if (st === "Starting") return "Starting camera..."
                     return st
                 }
-                color: root.text
+                color: previewRoot.text
                 font.pixelSize: 12
             }
         }
@@ -74,7 +84,7 @@ Rectangle {
         anchors.margins: 26
         radius: 12
         color: "#f217171d"
-        border.color: root.stroke
+        border.color: previewRoot.stroke
         border.width: 1
 
         SettingsPanel {
@@ -94,7 +104,7 @@ Rectangle {
         height: diagColumn.implicitHeight + 20
         radius: 8
         color: "#d0101014"
-        border.color: root.stroke
+        border.color: previewRoot.stroke
         border.width: 1
 
         Shortcut {
@@ -108,29 +118,29 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 2
 
-            Label { color: root.accentAlt; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.accentAlt; font.pixelSize: 11; font.family: "Consolas"
                     text: "fps      " + DiagnosticsController.previewFps.toFixed(1) +
                           "  (cam " + DiagnosticsController.cameraFps.toFixed(1) + ")" }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "frame    " + DiagnosticsController.frameTimeMs.toFixed(2) + " ms" }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "gpu      " + DiagnosticsController.gpuTimeMs.toFixed(2) + " ms" }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "cpu      " + DiagnosticsController.cpuTimeMs.toFixed(2) + " ms" }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "camera   " + DiagnosticsController.cameraResolution }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "stages   " + DiagnosticsController.activeEffects.join(", ") }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "dropped  " + DiagnosticsController.droppedFrames +
                           "   pool " + DiagnosticsController.pooledTextures }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "track    " + DiagnosticsController.trackingFps.toFixed(1) + " fps  " +
                           DiagnosticsController.trackingMs.toFixed(1) + " ms" }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "face     conf " + DiagnosticsController.faceConfidence.toFixed(2) +
                           "  n " + DiagnosticsController.faceCount }
-            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+            Label { color: previewRoot.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "beauty   " + (DiagnosticsController.beautyEnabled ? "ON" : "OFF") +
                           "  " + DiagnosticsController.beautyMs.toFixed(1) + " ms" }
         }

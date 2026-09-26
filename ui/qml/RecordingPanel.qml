@@ -5,6 +5,16 @@ import QtQuick.Controls.Basic
 import QtQuick.Layouts
 
 Rectangle {
+    id: root
+
+    readonly property color bg: "#101014"
+    readonly property color surface: "#17171d"
+    readonly property color surfaceAlt: "#1d1d25"
+    readonly property color stroke: "#2a2a33"
+    readonly property color text: "#e8e8ee"
+    readonly property color textDim: "#8b8b98"
+    readonly property color accent: "#ff4d79"
+    readonly property color accentAlt: "#4dd8ff"
     color: "transparent"
 
     ColumnLayout {
