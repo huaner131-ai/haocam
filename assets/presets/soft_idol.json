@@ -1,0 +1,36 @@
+{
+  "name": "Soft Idol",
+  "version": 1,
+  "beauty": {
+    "smoothing": 0.72,
+    "whitening": 0.15,
+    "rosy": 0.2,
+    "sharpen": 0.1,
+    "faceSlim": 0.12,
+    "eyeSize": 0.05
+  },
+  "makeup": {
+    "foundation": {
+      "enabled": true,
+      "opacity": 0.35
+    },
+    "blush": {
+      "enabled": true,
+      "color": "#FF7890",
+      "opacity": 0.3
+    },
+    "lipstick": {
+      "enabled": true,
+      "color": "#C73563",
+      "opacity": 0.6
+    }
+  },
+  "ar": {
+    "enabled": false
+  },
+  "filters": {
+    "brightness": 0,
+    "contrast": 0,
+    "saturation": 0.08
+  }
+}

@@ -1,0 +1,26 @@
+# Build output
+build/
+out/
+cmake-build-*/
+
+# Qt Creator / VS
+.vs/
+.vscode/
+*.user
+CMakeUserPresets.json
+
+# Generated
+compile_commands.json
+generated/
+
+# SDK drop-in directories (never commit proprietary SDKs)
+sdk/facebetter/*
+!sdk/facebetter/README.md
+sdk/openmakeup/*
+!sdk/openmakeup/README.md
+sdk/snap/*
+!sdk/snap/README.md
+
+# Runtime artifacts
+*.log
+*.mp4

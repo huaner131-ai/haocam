@@ -1,0 +1,64 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "windows-base",
+      "displayName": "HaoCam Windows (Visual Studio 2022)",
+      "description": "Full desktop app with Media Foundation + D3D11. Set QT_CMAKE_PREFIX_PATH to your Qt 6.8 install (e.g. C:/Qt/6.8.2/msvc2022_64).",
+      "generator": "Visual Studio 17 2022",
+      "architecture": { "value": "x64", "strategy": "set" },
+      "binaryDir": "${sourceDir}/build/windows",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "$env{QT_CMAKE_PREFIX_PATH}",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "HAOCAM_BUILD_APP": "ON",
+        "HAOCAM_BUILD_TESTS": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-ninja",
+      "displayName": "HaoCam Windows (Ninja + cl)",
+      "inherits": "windows-base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/windows-ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "linux-core",
+      "displayName": "HaoCam core + tests (Linux/CI, no Qt)",
+      "description": "Platform-neutral core library and unit tests. The Qt GUI and Windows GPU layers are excluded.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux-core",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "HAOCAM_BUILD_APP": "OFF",
+        "HAOCAM_BUILD_TESTS": "ON"
+      },
+      "condition": {
+        "type": "notEquals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "windows", "configurePreset": "windows-base", "configuration": "Release" },
+    { "name": "windows-ninja", "configurePreset": "windows-ninja" },
+    { "name": "linux-core", "configurePreset": "linux-core" }
+  ],
+  "testPresets": [
+    {
+      "name": "linux-core",
+      "configurePreset": "linux-core",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}
