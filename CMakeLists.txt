@@ -231,8 +231,6 @@ if(HAOCAM_BUILD_APP)
         "${CMAKE_CURRENT_SOURCE_DIR}/app/main.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/app/App.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/app/App.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/app/MainWindow.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/app/MainWindow.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/EngineController.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/EngineController.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/ui/controllers/CameraController.h"
