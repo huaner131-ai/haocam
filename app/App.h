@@ -10,6 +10,7 @@
 
 namespace haocam::app {
 
+class BeautyController;
 class CameraController;
 class DiagnosticsController;
 class EngineController;

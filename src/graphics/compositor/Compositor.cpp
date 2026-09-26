@@ -93,6 +93,8 @@ bool Compositor::initialize(ID3D11Device* device, ID3D11DeviceContext* context) 
     return true;
 }
 
+GpuTextureRef Compositor::lastProcessedTexture() const { return m_lastProcessed; }
+
 void Compositor::shutdown() {
     m_pipeline.reset();
     {
@@ -103,6 +105,8 @@ void Compositor::shutdown() {
         }
     }
     m_latestFrameId.store(0, std::memory_order_release);
+    m_compositeOverride.reset();
+    m_lastProcessed.reset();
     m_device = nullptr;
     m_context = nullptr;
 }
@@ -240,6 +244,12 @@ void Compositor::process(Frame& frame) {
     }
 
     // ---- Pass 2: composite into the final ring texture ----
+    // Beauty override (when EffectManager supplied a fresh beauty output,
+    // the composite samples it instead of the un-beautified processed frame).
+    GpuTextureRef compositeSource = m_compositeOverride ? m_compositeOverride : processed;
+    auto* compositeViews = static_cast<gfx::D3D11TextureViews*>(compositeSource->userData());
+    if (!compositeViews || !compositeViews->srvPlane0) compositeViews = processedViews;
+
     GpuTextureRef finalTexture = pipeline->pool->acquire(
         width, height, PixelFormat::BGRA8,
         static_cast<uint8_t>(TextureBind::ShaderResource) |
@@ -266,6 +276,7 @@ void Compositor::process(Frame& frame) {
 
     m_context->End(tsEnd.Get());
     m_context->End(disjoint.Get());
+    m_lastProcessed = processed;
     pipeline->disjointPrev = disjoint;
     pipeline->startPrev = tsStart;
     pipeline->endPrev = tsEnd;

@@ -1,4 +1,4 @@
-# GPU Pipeline (Phase 1)
+# GPU Pipeline (Phase 1 + Phase 2 tracking path)
 
 ## Principles honored (spec section 18)
 
@@ -36,6 +36,7 @@ device + sharing when Direct3D 12 support lands.
 |-------------|----------------------|------------------|-----------------|-----------------------------------------|
 | ColorConvert| 2 Color Conversion + 8 Color/LUT | NV12 (R8 + R8G8 SRVs) | pooled BGRA8 | BT.709 limited-range expansion, brightness/contrast/saturation, mirror |
 | Composite   | 9 Final Composite    | processed BGRA8  | final ring BGRA8| letterbox-free 1:1; aspect handled by UI sizing |
+| TrackerCopy | (off-graph helper)   | processed BGRA8  | BGRA8 RT <=480px | `tracker_ps.hlsl` swizzles BGRA->RGBA in the target; fullscreen VS |
 
 Shaders are embedded into the binary at build time
 (`cmake/EmbedFile.cmake`) and compiled at startup with `D3DCompile`
@@ -47,6 +48,33 @@ files.
 `Compositor` publishes into 3 ring slots. `VideoView` displays the newest
 slot and reports consumption via `notifyOutputConsumed`; the engine waits
 (bounded) before overwriting an unconsumed slot so the preview never tears.
+
+## Phase 2: tracker + beauty pixel traffic (readback tradeoff, spec section 20)
+
+Frame pixels stay GPU-resident end to end. Two consumers need pixels that
+only exist on the GPU (MediaPipe CPU inference, Facebetter CPU processing);
+HaoCam handles both with ONE controlled readback per consumer, never a
+full-resolution download:
+
+1. **Tracking**: `D3D11PixelSource` downscales the last composited texture
+   to <=480 px wide on the GPU, then copies it into a 2-slot staging ring
+   (reused, mapped with normal read usage). At 16:9 that is a ~0.9 MB
+   readback per *tracked* frame (30/s default) - not per camera frame
+   (up to 60/s) and not per preview frame. The copy + read time is
+   measured (`TrackingStats.lastProcessMs` covers read + infer).
+   Rationale: MediaPipe FaceLandmarker runs on CPU with RGBA bytes; the
+   downscale halves the tracked-pixel count vs 720p and keeps the upload
+   at a fixed small size regardless of camera resolution.
+2. **Beauty (Facebetter)**: `GpuFrameCopier::readBGRA` copies the full
+   processed frame into a 2-slot staging ring only while the beauty engine
+   is actually processing; the result is uploaded back into a pooled BGRA8
+   texture (`GpuFrameCopier::uploadBGRA`) and re-enters the normal GPU
+   composite as the freshness-gated override. All buffers reused; the
+   individual costs surface in the F3 overlay (readback/sdk/upload ms).
+
+Neither path allocates per frame (spec section 35). If the beauty engine
+stalls, the freshness gate simply keeps the un-beautified GPU frame - the
+camera never waits for a readback.
 
 ## Diagnostics
 

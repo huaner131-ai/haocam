@@ -36,15 +36,24 @@ cmake --build --preset windows-ninja
 |-----------------------------------|---------|-------------------------------------------|
 | `HAOCAM_BUILD_APP`                | ON      | Qt/QML desktop application                |
 | `HAOCAM_BUILD_TESTS`              | ON      | Platform-neutral core unit tests          |
-| `HAOCAM_ENABLE_FACEBETTER`        | OFF     | Beauty provider (Phase 2)                 |
+| `HAOCAM_ENABLE_FACEBETTER`        | OFF     | Beauty provider (Phase 2, needs sdk/facebetter drop-in) |
+| `HAOCAM_ENABLE_MEDIAPIPE`         | OFF     | Face tracker (Phase 2, needs sdk/mediapipe drop-in) |
 | `HAOCAM_ENABLE_OPENMAKEUP`        | OFF     | Makeup provider via web runtime (Phase 3) |
 | `HAOCAM_ENABLE_SNAP`              | OFF     | AR provider via web runtime (Phase 4)     |
 | `HAOCAM_ENABLE_FFMPEG`            | OFF     | Recording backend (Phase 5)               |
 | `HAOCAM_ENABLE_VIRTUAL_CAMERA`    | OFF     | Virtual camera output (Phase 6)           |
 
 Optional SDKs must never block the core build: every `HAOCAM_ENABLE_*` flag
-currently maps to a status report in the UI (the providers arrive in their
-phases).
+maps to an honest provider status in the UI when the SDK is absent.
+
+Drop-in layouts (never committed):
+
+* `sdk/facebetter/` - `include/facebetter/*.h`, `lib/facebetter.lib` +
+  `facebetter.dll`, `resource/resource.fbd`. Credentials go to
+  `%LOCALAPPDATA%\HaoCam\config.json` (copy `config.example.json`).
+* `sdk/mediapipe/` - Tasks C++ headers + prebuilt libs; the
+  `face_landmarker.task` model goes to `assets/models/` (see
+  `assets/models/README.md`).
 
 ## Core-only build (Linux/macOS/CI)
 

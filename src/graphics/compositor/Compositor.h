@@ -52,7 +52,19 @@ public:
 
     // Processes one camera frame; publishes the newest result into the
     // output ring (releasing older entries). Safe to call repeatedly.
+    // `frame` is expected to be GPU-resident (NV12 or BGRA8).
     void process(Frame& frame);
+
+    // Returns the processed (color-converted) texture of the LAST process()
+    // call - the input the tracking worker and beauty engine consume.
+    GpuTextureRef lastProcessedTexture() const;
+
+    // Composite-source override (beauty output). Set before process() on the
+    // engine thread; when set, pass 2 composites this texture instead of the
+    // freshly color-converted one. Cleared automatically when the texture
+    // reference is empty.
+    void setCompositeOverride(GpuTextureRef texture) { m_compositeOverride = std::move(texture); }
+    void clearCompositeOverride() { m_compositeOverride.reset(); }
 
     // Output ring access (render thread). latestFrameId() lets the UI skip
     // work when nothing new arrived. The texture is valid until the next
@@ -88,6 +100,9 @@ private:
 
     ColorAdjustments m_adjustments;
     gfx::RenderGraph m_renderGraph;
+
+    GpuTextureRef m_compositeOverride; // engine thread only (set/clear + read)
+    GpuTextureRef m_lastProcessed;     // engine thread only (written in process)
 
     std::chrono::steady_clock::time_point m_lastProcess{};
     std::atomic<double> m_gpuTimeMs{0.0};

@@ -46,19 +46,6 @@ VideoView::~VideoView() {
 
 #ifdef Q_OS_WIN
 
-bool EngineController::attachToPipeline(QQuickWindow* window, void* d3d11Device,
-                                        void* d3d11Context) {
-    Q_UNUSED(window);
-    EngineController* engine = sharedInstance();
-    if (!engine) return false;
-    return engine->attachRenderDevice(d3d11Device, d3d11Context);
-}
-
-::haocam::Compositor* EngineController::sharedCompositor() {
-    EngineController* engine = sharedInstance();
-    return engine ? engine->compositor() : nullptr;
-}
-
 QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
     auto* node = static_cast<QSGSimpleTextureNode*>(oldNode);
     if (!node) {
@@ -150,10 +137,6 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
 }
 
 #else // !Q_OS_WIN
-
-bool EngineController::attachToPipeline(QQuickWindow*, void*, void*) { return false; }
-
-::haocam::Compositor* EngineController::sharedCompositor() { return nullptr; }
 
 QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
     auto* node = static_cast<QSGSimpleTextureNode*>(oldNode);

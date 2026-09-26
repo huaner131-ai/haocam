@@ -48,7 +48,9 @@ replaceable providers.
 | GUI thread       | Qt               | QML, controllers, settings                        |
 | Camera thread    | `MediaFoundationCapture` | Source Reader `ReadSample` loop, GPU frame copies |
 | Watchdog thread  | `CameraManager`  | FPS measurement, reconnect with backoff           |
-| Engine thread    | Phase 2+ (compositor runs on the camera-driven consumer thread in Phase 1) | Effect passes |
+| Engine thread    | `EngineController` | consumes FrameQueue(3), drives `EffectManager::process` (Phase 2) |
+| Tracking thread  | `TrackingWorker` | latest-slot face tracking + smoothing (Phase 2)   |
+| Beauty thread    | `FacebetterProvider` | Facebetter engine init/retry + per-frame process (Phase 2) |
 | Scene-graph thread | Qt Quick       | Preview presentation via QRhi import              |
 | Web runtime      | Phase 3/4        | WebView2 bridge for OpenMakeup / Snap             |
 

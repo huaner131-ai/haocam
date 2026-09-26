@@ -1,16 +1,15 @@
 #pragma once
 
-// Developer diagnostics overlay controller (FPS, frame time, GPU time,
-// CPU time, camera resolution, active effects, dropped frames).
+// Developer diagnostics overlay controller (spec section 34, Phase 2
+// extension: tracking + beauty rows).
 
-#include <QAtomicInt>
 #include <QObject>
 #include <QStringList>
 #include <QTimer>
 
-namespace haocam::app {
+#include "ui/controllers/EngineController.h"
 
-class EngineController;
+namespace haocam::app {
 
 class DiagnosticsController : public QObject {
     Q_OBJECT
@@ -26,6 +25,15 @@ class DiagnosticsController : public QObject {
     Q_PROPERTY(uint64_t droppedFrames READ droppedFrames NOTIFY statsChanged)
     Q_PROPERTY(int pooledTextures READ pooledTextures NOTIFY statsChanged)
 
+    // Phase 2: tracking + beauty.
+    Q_PROPERTY(double trackingFps READ trackingFps NOTIFY statsChanged)
+    Q_PROPERTY(double trackingMs READ trackingMs NOTIFY statsChanged)
+    Q_PROPERTY(float faceConfidence READ faceConfidence NOTIFY statsChanged)
+    Q_PROPERTY(int faceCount READ faceCount NOTIFY statsChanged)
+    Q_PROPERTY(bool beautyEnabled READ beautyEnabled NOTIFY statsChanged)
+    Q_PROPERTY(double beautyMs READ beautyMs NOTIFY statsChanged)
+    Q_PROPERTY(QString beautyStatus READ beautyStatus NOTIFY statsChanged)
+
 public:
     explicit DiagnosticsController(EngineController& engine, QObject* parent = nullptr);
 
@@ -39,6 +47,14 @@ public:
     QStringList activeEffects() const { return m_activeEffects; }
     uint64_t droppedFrames() const { return m_droppedFrames; }
     int pooledTextures() const { return m_pooledTextures; }
+
+    double trackingFps() const { return m_trackingFps; }
+    double trackingMs() const { return m_trackingMs; }
+    float faceConfidence() const { return m_faceConfidence; }
+    int faceCount() const { return m_faceCount; }
+    bool beautyEnabled() const { return m_beautyEnabled; }
+    double beautyMs() const { return m_beautyMs; }
+    QString beautyStatus() const { return m_beautyStatus; }
 
     Q_INVOKABLE void toggleOverlay() { setOverlayVisible(!m_overlayVisible); }
     void setOverlayVisible(bool visible);
@@ -62,6 +78,13 @@ private:
     QStringList m_activeEffects;
     uint64_t m_droppedFrames = 0;
     int m_pooledTextures = 0;
+    double m_trackingFps = 0.0;
+    double m_trackingMs = 0.0;
+    float m_faceConfidence = 0.0f;
+    int m_faceCount = 0;
+    bool m_beautyEnabled = false;
+    double m_beautyMs = 0.0;
+    QString m_beautyStatus;
 };
 
 } // namespace haocam::app

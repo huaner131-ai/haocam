@@ -19,8 +19,17 @@ sdk/facebetter/*
 sdk/openmakeup/*
 !sdk/openmakeup/README.md
 sdk/snap/*
+sdk/mediapipe/*
+!sdk/mediapipe/README.md
 !sdk/snap/README.md
 
 # Runtime artifacts
 *.log
 *.mp4
+
+# Face tracking models (large binaries - manual download, see assets/models/README.md)
+assets/models/*.task
+assets/models/*.tflite
+
+# Local runtime configuration (may contain credentials - never commit)
+config.json

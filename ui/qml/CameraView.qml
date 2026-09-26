@@ -124,6 +124,15 @@ Rectangle {
             Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
                     text: "dropped  " + DiagnosticsController.droppedFrames +
                           "   pool " + DiagnosticsController.pooledTextures }
+            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+                    text: "track    " + DiagnosticsController.trackingFps.toFixed(1) + " fps  " +
+                          DiagnosticsController.trackingMs.toFixed(1) + " ms" }
+            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+                    text: "face     conf " + DiagnosticsController.faceConfidence.toFixed(2) +
+                          "  n " + DiagnosticsController.faceCount }
+            Label { color: root.textDim; font.pixelSize: 11; font.family: "Consolas"
+                    text: "beauty   " + (DiagnosticsController.beautyEnabled ? "ON" : "OFF") +
+                          "  " + DiagnosticsController.beautyMs.toFixed(1) + " ms" }
         }
     }
 }

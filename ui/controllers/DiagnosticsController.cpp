@@ -1,7 +1,6 @@
 #include "ui/controllers/DiagnosticsController.h"
 
 #include "core/logging/Logger.h"
-#include "ui/controllers/EngineController.h"
 
 #ifdef Q_OS_WIN
 #include "graphics/compositor/Compositor.h"
@@ -33,12 +32,30 @@ void DiagnosticsController::refresh() {
     m_cameraFps = camera.measuredFps();
     m_droppedFrames = m_engine.queueDroppedFrames();
 
+    auto& effects = m_engine.effectManager();
+
+    // ---- Tracking (spec section 34) ----
+    if (auto* worker = effects.trackingWorker()) {
+        const auto stats = worker->stats();
+        m_trackingFps = stats.fps;
+        m_trackingMs = stats.lastProcessMs;
+        m_faceConfidence = stats.confidence;
+        m_faceCount = stats.faceCount;
+    }
+
+    // ---- Beauty ----
+    const auto beauty = effects.beautyDiagnostics();
+    m_beautyEnabled = beauty.enabled && beauty.available;
+    m_beautyMs = beauty.readbackMs + beauty.sdkProcessMs + beauty.uploadMs;
+    m_beautyStatus = QString::fromStdString(
+        effects.beauty() ? effects.beauty()->statusText() : "Unavailable");
+
 #ifdef Q_OS_WIN
     if (auto* compositor = m_engine.compositor(); compositor && compositor->valid()) {
         m_previewFps = compositor->processFps();
-        m_frameTimeMs = compositor->lastCpuTimeMs();
         m_gpuTimeMs = compositor->lastGpuTimeMs();
         m_cpuTimeMs = compositor->lastCpuTimeMs();
+        m_frameTimeMs = m_cpuTimeMs;
         m_pooledTextures = static_cast<int>(compositor->pooledTextures());
     }
 #endif
@@ -52,7 +69,6 @@ void DiagnosticsController::refresh() {
     }
 
     m_activeEffects = m_engine.activeStages();
-
     emit statsChanged();
 }
 

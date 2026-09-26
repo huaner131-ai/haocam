@@ -10,6 +10,11 @@ add_executable(haocam_tests
     core/test_AppSettings.cpp
     core/test_EventBus.cpp
     core/test_EffectGraph.cpp
+    FaceDataTests.cpp
+    LandmarkSmootherTests.cpp
+    FaceTrackingTests.cpp
+    BeautyProviderTests.cpp
+    AppConfigTests.cpp
 )
 
 target_link_libraries(haocam_tests PRIVATE haocam_core)

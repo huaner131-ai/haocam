@@ -12,9 +12,20 @@ any integration work (spec section 37). Re-verify at integration time.
 | License/auth | Developer account; `app_id` + `app_key` configured per app | facebetter.net docs (EngineConfig) |
 | GPU texture sharing | SDK advertises GPU rendering pipeline & realtime video processing; exact interop formats to verify at integration (D3D11 texture input vs internal upload) | facebetter.net product overview |
 | WebView integration | Not required on desktop | - |
-| Key APIs | `BeautyEffectEngine::Create`, `SetBeautyTypeEnabled`, `SetBeautyParam(Smoothing/Whitening/...)`, `ProcessImage(frame)` | facebetter.net homepage sample |
+| Key APIs (verified SDK 2.0) | `SetLogConfig` -> `BeautyEffectEngine::Create(EngineConfig{app_id, app_key, license_token?, resource_path=resource.fbd, external_context=false})` -> `SetCallbacks(EngineCallbacks{on_engine_event: 0=license OK / 1=license failed / 100=init complete / 101=init failed, on_face_landmarks})` -> `SetSmoothing/SetWhitening/SetRosiness/SetSharpening`, `SetReshape(Reshape::FaceThin/EyeSize/NoseSlim/Jawbone, v)` ([-1,1]) -> `ImageFrame::CreateWithRGBA(data,w,h,stride)`, `frame->type=Video`, `ProcessImage` -> output `{Data,Width,Height,Stride}`. NO type-enable step in 2.0 (intensity>0 enables). | docs.facebetter.net/windows/quick-start + implement-beauty; demo/cpp in github.com/pixpark/facebetter-sdk |
 | Redistribution | SDK download behind the vendor site; license terms to review before shipping binaries | facebetter.net/download |
 | Action for HaoCam | Config mechanism for app_id/key (Settings, local-only storage). No credentials in repo. | spec section 5 |
+
+## MediaPipe Face Landmarker (Tracking - Phase 2)
+
+| Question | Finding |
+|---|---|
+| Integration | MediaPipe Tasks C++ (`FaceLandmarker`, LIVE_STREAM/VIDEO mode). Adapter: `src/face/MediaPipeFaceTracker.cpp` - the ONLY MediaPipe-aware TU. |
+| Options | `model_asset_path` (.task bundle), `num_faces`, `min_face_detection/presence/tracking_confidence`, `output_face_blendshapes`, `output_facial_transformation_matrixes` (verified against the real header, github.com/google-ai-edge/mediapipe). |
+| Per-frame call | `DetectForVideo(Image, timestamp_ms)` (VIDEO mode, monotonic ms) or the LIVE_STREAM callback; result: normalized landmarks (468), optional blendshapes + 4x4 pose matrix. |
+| Model | `face_landmarker.task`, manual download into `assets/models/` - never downloaded at runtime, never committed (spec section 38). |
+| Drop-in | `sdk/mediapipe/include` + `sdk/mediapipe/lib`; `HAOCAM_ENABLE_MEDIAPIPE=ON` detects it, otherwise the build stays green with `NullFaceTracker` (Unavailable). |
+| Status in HaoCam | Adapter + GPU downscale/readback source implemented; compiled only with the SDK present. NOT compiled in the sandbox (no drop-in). |
 
 ## OpenMakeupSDK (Makeup - Phase 3)
 

@@ -1,0 +1,19 @@
+{
+  "facebetter": {
+    "enabled": false,
+    "app_id": "PASTE_YOUR_APP_ID_HERE",
+    "app_key": "PASTE_YOUR_APP_KEY_HERE",
+    "license_token": "",
+    "resource_path": ""
+  },
+  "tracking": {
+    "enabled": true,
+    "maxFps": 30,
+    "modelPath": "",
+    "smoothingMinCutoff": 1.2,
+    "smoothingBeta": 0.007
+  },
+  "beauty": {
+    "maxProcessFps": 30
+  }
+}
