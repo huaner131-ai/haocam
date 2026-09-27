@@ -1,58 +1,120 @@
-Not Flagged		7080	0	Main Thread	Main Thread	Qt6Core.dll!00007ff855a453fe
-Not Flagged		19248	0	Worker Thread	ntdll.dll thread	ntdll.dll!00007ff94de05874
-Not Flagged		18240	0	Worker Thread	QQmlThread	win32u.dll!00007ff94b4cad04
-Not Flagged		18204	0	Worker Thread	QSGRenderThread	d3d11.dll!00007ff946b169ef
-Not Flagged		15236	0	Worker Thread	ntdll.dll thread	mfreadwrite.dll!00007ff8c33b70cb
-Not Flagged		19432	0	Worker Thread	ntdll.dll thread	d3d11.dll!00007ff946b16864
-Not Flagged		18128	0	Worker Thread	ntdll.dll thread	ntdll.dll!00007ff94de05874
-Not Flagged		19488	0	Worker Thread	haocam-watchdog	haocam.exe!00007ff71b9bfe8e
-Not Flagged		17476	0	Worker Thread	haocam-capture	mfplat.dll!00007ff9448cbe29
-Not Flagged		15196	0	Worker Thread	haocam-engine	haocam.exe!00007ff71b9dc3b4
-Not Flagged		14108	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935286667
-Not Flagged		17756	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		7408	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		14488	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		15644	0	Worker Thread	QThread	win32u.dll!00007ff94b4c5fe4
-Not Flagged		1752	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		6288	0	Worker Thread	ntdll.dll thread	ntdll.dll!00007ff94de05874
-Not Flagged		9244	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		18532	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		11528	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff934e581be
-Not Flagged		20416	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		19620	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		20168	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged	>	18208	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff93528aeaf
-Not Flagged		16200	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff934a12ac6
-Not Flagged		19596	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935227360
-Not Flagged		16892	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
-Not Flagged		17752	0	Worker Thread	ntdll.dll thread	ntdll.dll!00007ff94de05874
+PS C:\Users\fourk> cd D:\cam\haocam
+PS D:\cam\haocam> git pull                    # HARUS sampai 3e97c36
+remote: Enumerating objects: 32, done.
+remote: Counting objects: 100% (32/32), done.
+remote: Compressing objects: 100% (9/9), done.
+remote: Total 19 (delta 10), reused 16 (delta 10), pack-reused 0 (from 0)
+Unpacking objects: 100% (19/19), 6.51 KiB | 148.00 KiB/s, done.
+From https://github.com/huaner131-ai/haocam
+   914fcb3..3e97c36  arena/01a0de8b-haocam -> origin/arena/01a0de8b-haocam
+   11bfb0b..cd70a6d  main                  -> origin/main
+Updating 914fcb3..3e97c36
+Fast-forward
+ CMakeLists.txt                        | 24 +++++++++++-------------
+ app/App.cpp                           |  6 ++----
+ cmake/WriteBuildRev.cmake             | 23 +++++++++++++++++++++++
+ src/camera/MediaFoundationCapture.cpp | 17 ++++++++++++++++-
+ src/camera/MediaFoundationCapture.h   | 14 +++++++-------
+ ui/controllers/EngineController.cpp   | 17 +++++++++++++++--
+ 6 files changed, 74 insertions(+), 27 deletions(-)
+ create mode 100644 cmake/WriteBuildRev.cmake
+PS D:\cam\haocam> cmake --build --preset windows --config Release
+CMake is re-running because D:/cam/haocam/build/windows/CMakeFiles/generate.stamp is out-of-date.
+  the file 'D:/cam/haocam/CMakeLists.txt'
+  is newer than 'D:/cam/haocam/build/windows/CMakeFiles/generate.stamp.depend'
+  result='-1'
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
+-- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR)
+-- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR)
+CMake Warning at C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6/QtPublicDependencyHelpers.cmake:339 (message):
+  This project is using headers of the GuiPrivate module and will therefore
+  be tied to this specific Qt module build version.  Running this project
+  against other versions of the Qt modules may crash at any arbitrary point.
+  This is not a bug, but a result of using Qt internals.  You have been
+  warned!
+
+  You can disable this warning by setting QT_NO_PRIVATE_MODULE_WARNING to ON.
+Call Stack (most recent call first):
+  C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6GuiPrivate/Qt6GuiPrivateConfig.cmake:48 (_qt_internal_show_private_module_warning)
+  C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake:257 (find_package)
+  CMakeLists.txt:223 (find_package)
 
 
+-- Configuring done (1.1s)
+-- Generating done (1.0s)
+-- Build files have been written to: D:/cam/haocam/build/windows
+MSBuild version 17.14.60+43b635718 for .NET Framework
 
+  -- haocam build stamp -> 3e97c36
+  Building Custom Rule D:/cam/haocam/CMakeLists.txt
+  CameraManager.cpp
+  MediaFoundationCapture.cpp
+D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(15,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:
+\cam\haocam\build\windows\haocam_core.vcxproj]
+      D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(15,9):
+      'WIN32_LEAN_AND_MEAN' previously declared on the command line
+
+D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(16,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam
+\build\windows\haocam_core.vcxproj]
+      D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(16,9):
+      'NOMINMAX' previously declared on the command line
+
+D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(369,26): warning C4245: 'initializing': conversion from '__MIDL___M
+IDL_itf_mfreadwrite_0000_0001_0001' to 'DWORD', signed/unsigned mismatch [D:\cam\haocam\build\windows\haocam_core.vcxpr
+oj]
+  haocam_core.vcxproj -> D:\cam\haocam\build\windows\Release\haocam_core.lib
+  1>Automatic MOC and UIC for target haocam
+  Running AUTOMOC file extraction for target haocam
+  Running moc --collect-json for target haocam
+  Generating meta_types/qt6haocam_metatypes.json
+  Automatic QML type registration for target haocam
+  Generating .rcc/qmlcache/haocam_ui_qml_Main_qml.cpp, .rcc/qmlcache/haocam_ui_qml_Main_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_CameraView_qml.cpp, .rcc/qmlcache/haocam_ui_qml_CameraView_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_CameraPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_CameraPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_BeautyPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_BeautyPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_MakeupPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_MakeupPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_ARPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_ARPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_FilterPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_FilterPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_RecordingPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_RecordingPanel_qml.cpp.aot
+  stats
+  Generating .rcc/qmlcache/haocam_ui_qml_SettingsPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_SettingsPanel_qml.cpp.aotst
+  ats
+  main.cpp
+  App.cpp
+  EngineController.cpp
+  CameraController.cpp
+  BeautyController.cpp
+  FilterController.cpp
+  DiagnosticsController.cpp
+  VideoView.cpp
+  qrc_qmake_HaoCam.cpp
+  haocam_qmlcache_loader.cpp
+  haocam_ui_qml_Main_qml.cpp
+  haocam_ui_qml_CameraView_qml.cpp
+  haocam_ui_qml_CameraPanel_qml.cpp
+C:\Qt\6.11.2\msvc2022_64\include\QtCore\qmetatype.h(502,1): warning C4702: unreachable code [D:\cam\haocam\build\window
+s\haocam.vcxproj]
+C:\Qt\6.11.2\msvc2022_64\include\QtCore\qvariant.h(723,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
+\haocam.vcxproj]
+C:\Qt\6.11.2\msvc2022_64\include\QtCore\qvariant.h(728,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
+\haocam.vcxproj]
+C:\Qt\6.11.2\msvc2022_64\include\QtQml\qjsengine.h(112,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
+\haocam.vcxproj]
+  haocam_ui_qml_BeautyPanel_qml.cpp
+  haocam_ui_qml_MakeupPanel_qml.cpp
+  haocam_ui_qml_ARPanel_qml.cpp
+  haocam_ui_qml_FilterPanel_qml.cpp
+  haocam_ui_qml_RecordingPanel_qml.cpp
+  haocam_ui_qml_SettingsPanel_qml.cpp
+  qrc_haocam_raw_qml_0.cpp
+  qrc_haocam_raw_qml_0_extra_qmldirs.cpp
+  mocs_compilation_Release.cpp
+  haocam_qmltyperegistrations.cpp
+LINK : fatal error LNK1104: cannot open file 'D:\cam\haocam\build\windows\Release\haocam.exe' [D:\cam\haocam\build\wind
+ows\haocam.vcxproj]
+  haocam_tests.vcxproj -> D:\cam\haocam\build\windows\Release\haocam_tests.exe
+PS D:\cam\haocam> .\build\windows\Release\haocam.exe
 PS D:\cam\haocam> Get-Content "$env:LOCALAPPDATA\HaoCam\logs\haocam.log" -Tail 60
-[2026-09-28 00:38:10.855] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
-[2026-09-28 00:38:10.855] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
-[2026-09-28 00:38:10.855] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
-[2026-09-28 00:38:10.855] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
-[2026-09-28 00:38:10.855] [INFO ] [engine    ] attach-async: stage=engine-thread
-[2026-09-28 00:38:10.855] [INFO ] [engine    ] attach-async: stage=camera
-[2026-09-28 00:38:10.855] [INFO ] [engine    ] Engine thread started
-[2026-09-28 00:38:10.858] [INFO ] [camera    ] Enumerated 4 camera device(s)
-[2026-09-28 00:38:10.858] [INFO ] [camera    ] Starting camera '\\?\root#media#0002#{e5323777-f976-4f5b-9b55-b94699c46e44}\global' (preferred 1920x1080 @ 60 fps)
-[2026-09-28 00:38:10.858] [INFO ] [camera    ] Camera state Running
-[2026-09-28 00:38:10.858] [INFO ] [engine    ] Engine attached to Qt Quick D3D11 device
-[2026-09-28 00:38:10.861] [INFO ] [camera    ] Enumerated 4 camera device(s)
-[2026-09-28 00:38:10.890] [INFO ] [camera    ] Selected camera mode: 2560x1440 @ 60 fps (YUY2)
-[2026-09-28 00:38:10.977] [INFO ] [camera    ] Camera opened: 2560x1440 @ 60 fps (NV12)
-[2026-09-28 00:38:10.977] [INFO ] [camera    ] Camera state Running
-[2026-09-28 00:45:46.370] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
-[2026-09-28 00:45:46.370] [INFO ] [app       ] HaoCam 0.1.0 starting
-[2026-09-28 00:45:46.370] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
-[2026-09-28 00:45:46.607] [INFO ] [app       ] Startup complete
-[2026-09-28 00:45:46.610] [INFO ] [camera    ] Enumerated 4 camera device(s)
-[2026-09-28 00:45:46.825] [INFO ] [engine    ] attach: render thread handed over the device
-[2026-09-28 00:45:46.825] [INFO ] [engine    ] attach-async: stage=pipeline-init
-[2026-09-28 00:45:46.846] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
 [2026-09-28 00:45:46.846] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
 [2026-09-28 00:45:46.846] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
 [2026-09-28 00:45:46.847] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
@@ -90,3 +152,26 @@ PS D:\cam\haocam> Get-Content "$env:LOCALAPPDATA\HaoCam\logs\haocam.log" -Tail 6
 [2026-09-28 01:08:47.270] [INFO ] [camera    ] Selected camera mode: 2560x1440 @ 60 fps (YUY2)
 [2026-09-28 01:08:47.351] [INFO ] [camera    ] Camera opened: 2560x1440 @ 60 fps (NV12)
 [2026-09-28 01:08:47.351] [INFO ] [camera    ] Camera state Running
+[2026-09-28 01:31:39.773] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-28 01:31:39.774] [INFO ] [app       ] HaoCam 0.1.0 starting (build 879cc44)
+[2026-09-28 01:31:39.774] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-28 01:31:40.025] [INFO ] [app       ] Startup complete
+[2026-09-28 01:31:40.028] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 01:31:40.231] [INFO ] [preview   ] VideoView sync #1 (compositor=null latestFrame=0)
+[2026-09-28 01:31:40.232] [INFO ] [engine    ] attach: render thread handed over the device
+[2026-09-28 01:31:40.232] [INFO ] [engine    ] attach-async: stage=pipeline-init
+[2026-09-28 01:31:40.253] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
+[2026-09-28 01:31:40.254] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 01:31:40.254] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 01:31:40.254] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
+[2026-09-28 01:31:40.254] [INFO ] [engine    ] attach-async: stage=engine-thread
+[2026-09-28 01:31:40.254] [INFO ] [engine    ] attach-async: stage=camera
+[2026-09-28 01:31:40.254] [INFO ] [engine    ] Engine thread started
+[2026-09-28 01:31:40.256] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 01:31:40.256] [INFO ] [camera    ] Starting camera '\\?\root#media#0002#{e5323777-f976-4f5b-9b55-b94699c46e44}\global' (preferred 1920x1080 @ 60 fps)
+[2026-09-28 01:31:40.256] [INFO ] [camera    ] Camera state Running
+[2026-09-28 01:31:40.257] [INFO ] [engine    ] Engine attached to Qt Quick D3D11 device
+[2026-09-28 01:31:40.261] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 01:31:40.284] [INFO ] [camera    ] Selected camera mode: 2560x1440 @ 60 fps (YUY2)
+[2026-09-28 01:31:40.368] [INFO ] [camera    ] Camera opened: 2560x1440 @ 60 fps (NV12)
+[2026-09-28 01:31:40.368] [INFO ] [camera    ] Camera state Running
