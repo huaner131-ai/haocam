@@ -25,8 +25,10 @@ CameraController::CameraController(EngineController& engine, QObject* parent)
         [this](const events::CameraStatus& event) {
             QMetaObject::invokeMethod(this,
                                       [this, event] {
-                                          onBusStateChanged(event.state, event.stateName,
-                                                            event.deviceId, event.detail);
+                                          onBusStateChanged(event.state,
+                                                            QString::fromStdString(event.stateName),
+                                                            QString::fromStdString(event.deviceId),
+                                                            QString::fromStdString(event.detail));
                                       },
                                       Qt::QueuedConnection);
         });
@@ -98,8 +100,6 @@ QString CameraController::activeFormat() const {
     if (format.resolution.width == 0) return QStringLiteral("not started");
     return QString::fromStdString(describeFormat(format));
 }
-
-bool CameraController::mirror() const { return m_mirror; }
 
 void CameraController::setMirror(bool mirror) {
     if (mirror == m_mirror) return;

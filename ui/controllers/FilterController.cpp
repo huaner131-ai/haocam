@@ -3,6 +3,7 @@
 #include "ui/controllers/FilterController.h"
 
 #include "core/logging/Logger.h"
+#include "graphics/compositor/Compositor.h"
 #include "ui/controllers/EngineController.h"
 
 namespace haocam::app {

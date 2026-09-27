@@ -18,7 +18,9 @@ class FilterController;
 
 class App {
 public:
-    App() = default;
+    // Defined out-of-line in App.cpp: the unique_ptr members are only
+    // forward-declared in this header.
+    App();
     ~App();
 
     bool startup();
@@ -27,6 +29,7 @@ public:
 private:
     std::unique_ptr<EngineController> m_engineController;
     std::unique_ptr<CameraController> m_cameraController;
+    std::unique_ptr<BeautyController> m_beautyController;
     std::unique_ptr<FilterController> m_filterController;
     std::unique_ptr<DiagnosticsController> m_diagnosticsController;
     QQmlApplicationEngine m_qmlEngine;

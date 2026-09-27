@@ -7,6 +7,7 @@
 #include "core/logging/Logger.h"
 #include "core/threading/NamedThread.h"
 #include "effects/EffectContext.h"
+#include "effects/beauty/BeautyProvider.h"
 
 #ifdef Q_OS_WIN
 #include "graphics/compositor/Compositor.h"

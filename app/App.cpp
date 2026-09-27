@@ -20,6 +20,8 @@ namespace {
 constexpr const char* kCategory = "app";
 }
 
+App::App() = default;
+
 App::~App() { shutdown(); }
 
 bool App::startup() {
@@ -28,7 +30,7 @@ bool App::startup() {
     settings->load();
     const auto configDir = settings->filePath().parent_path();
     const auto logDir = configDir / "logs";
-    Logger::instance().initialize(
+    core::Logger::instance().initialize(
         logDir, core::logLevelFromString(
                     settings->getString("general", "logLevel", "info")),
         core::LogLevel::Debug);

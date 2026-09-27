@@ -21,6 +21,8 @@
 
 #include "camera/CameraManager.h"
 #include "core/config/AppConfig.h"
+#include "core/events/EventBus.h"
+#include "core/settings/AppSettings.h"
 #include "core/threading/FrameQueue.h"
 #include "effects/EffectManager.h"
 
