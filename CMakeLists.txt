@@ -168,7 +168,7 @@ if(WIN32)
     haocam_embed_shader(${CMAKE_CURRENT_SOURCE_DIR}/src/graphics/shaders/tracker_ps.hlsl)
 
     target_compile_definitions(haocam_core PUBLIC NOMINMAX WIN32_LEAN_AND_MEAN UNICODE _UNICODE)
-    target_link_libraries(haocam_core PUBLIC mfplat mfuuid mfreadwrite shlwapi d3d11 dxgi d3dcompiler)
+    target_link_libraries(haocam_core PUBLIC mfplat mf mfuuid mfreadwrite shlwapi d3d11 dxgi d3dcompiler)
 endif()
 
 if(HAOCAM_HAS_FACEBETTER)
