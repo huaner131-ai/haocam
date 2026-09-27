@@ -16,7 +16,6 @@ Rectangle {
     readonly property color textDim: "#8b8b98"
     readonly property color accent: "#ff4d79"
     readonly property color accentAlt: "#4dd8ff"
-    id: settingsRoot
 
     signal close()
 
@@ -37,7 +36,7 @@ Rectangle {
             Item { Layout.fillWidth: true }
             Button {
                 text: "Close"
-                onClicked: settingsRoot.close()
+                onClicked: root.close()
                 background: Rectangle {
                     radius: 8
                     color: parent.parent.hovered ? root.surfaceAlt : "#141419"
