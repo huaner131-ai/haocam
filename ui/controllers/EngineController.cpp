@@ -62,37 +62,54 @@ bool EngineController::attachRenderDevice(void* d3d11Device, void* d3d11Context)
         return m_started.load();
     }
 
+    HAOCAM_LOG_INFO(kCategory, "attach: render thread handed over the device");
+
 #ifdef Q_OS_WIN
-    EffectContext context;
-    context.device = static_cast<ID3D11Device*>(d3d11Device);
-    context.context = static_cast<ID3D11DeviceContext*>(d3d11Context);
-    // Phase 2: texturePool/scheduler slots remain reserved for later phases.
+    // IMPORTANT: this runs on the scene-graph RENDER thread. Effect-pipeline
+    // init (D3D11 objects, shader compile) and camera bootstrap (Media
+    // Foundation enumeration) are heavy - run them on a dedicated attach
+    // thread so the render thread returns immediately (the window can paint
+    // while the engine warms up; observed a GUI freeze when this chain ran
+    // synchronously on the render path).
+    const auto* device = d3d11Device;
+    const auto* context = d3d11Context;
+    if (m_attachThread.joinable()) m_attachThread.join();
+    m_attachThread = std::thread([this, device, context] {
+        core::setThreadName("haocam-attach");
+        EffectContext attachContext;
+        attachContext.device = const_cast<ID3D11Device*>(
+            static_cast<const ID3D11Device*>(device));
+        attachContext.context = const_cast<ID3D11DeviceContext*>(
+            static_cast<const ID3D11DeviceContext*>(context));
 
-    if (!m_effects->initialize(context)) {
-        m_started = false;
+        HAOCAM_LOG_INFO(kCategory, "attach-async: stage=pipeline-init");
+        if (!m_effects->initialize(attachContext)) {
+            m_started = false;
+            QMetaObject::invokeMethod(
+                this,
+                [this] { emit engineFailed("GPU pipeline initialization failed"); },
+                Qt::QueuedConnection);
+            return;
+        }
+
+        m_started = true;
+        HAOCAM_LOG_INFO(kCategory, "attach-async: stage=engine-thread");
+        startEngineThread();
+        HAOCAM_LOG_INFO(kCategory, "attach-async: stage=camera");
+        m_camera->setExternalCaptureDevice(
+            const_cast<ID3D11Device*>(static_cast<const ID3D11Device*>(device)));
+        startCamera();
+        HAOCAM_LOG_INFO(kCategory, "Engine attached to Qt Quick D3D11 device");
+
         QMetaObject::invokeMethod(
-            this, [this] { emit engineFailed("GPU pipeline initialization failed"); },
+            this,
+            [this] {
+                emit activeStagesChanged();
+                emit providerStatusChanged();
+                emit engineStarted();
+            },
             Qt::QueuedConnection);
-        return false;
-    }
-
-    m_started = true;
-    QMetaObject::invokeMethod(
-        this,
-        [this] {
-            emit activeStagesChanged();
-            emit providerStatusChanged();
-            emit engineStarted();
-        },
-        Qt::QueuedConnection);
-    HAOCAM_LOG_INFO(kCategory, "Engine attached to Qt Quick D3D11 device");
-
-    // Capture shares the same D3D11 device so NV12 frames never cross device
-    // boundaries (docs/GPU_PIPELINE.md).
-    m_camera->setExternalCaptureDevice(d3d11Device);
-
-    startEngineThread();
-    startCamera();
+    });
     return true;
 #else
     (void)d3d11Device;
@@ -139,6 +156,11 @@ void EngineController::startCamera() {
 }
 
 void EngineController::shutdownEngine() {
+    if (m_attachThread.joinable()) {
+        // The attach thread owns startEngineThread()/startCamera(); let it
+        // finish before tearing the pipeline down.
+        m_attachThread.join();
+    }
     stopEngineThread();
     if (m_camera) m_camera->stop();
     if (m_queue) m_queue->clear();

@@ -104,6 +104,8 @@ private:
     std::unique_ptr<CameraManager> m_camera;
 
     std::thread m_engineThread;
+    std::thread m_attachThread; // async pipeline/camera bootstrap (never on
+                                // the render/GUI thread)
     std::atomic<bool> m_engineThreadRunning{false};
     std::atomic<bool> m_deviceAttached{false};
     std::atomic<bool> m_started{false};

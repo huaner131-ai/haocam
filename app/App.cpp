@@ -104,7 +104,11 @@ bool App::startup() {
         return false;
     }
 
-    m_cameraController->refreshDevices();
+    // Media Foundation device enumeration is heavy; keep it off the QML
+    // bootstrap path (the panel also refreshes on user interaction).
+    QMetaObject::invokeMethod(
+        m_cameraController.get(), [this] { m_cameraController->refreshDevices(); },
+        Qt::QueuedConnection);
     HAOCAM_LOG_INFO(kCategory, "Startup complete");
     return true;
 }
