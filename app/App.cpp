@@ -1,5 +1,7 @@
 #include "app/App.h"
 
+#include "haocam_build_rev.h" // generated per-build (cmake/WriteBuildRev.cmake)
+
 #include <QFile>
 #include <QQuickWindow>
 #include <QTimer>
@@ -38,12 +40,8 @@ bool App::startup() {
         logDir, core::logLevelFromString(
                     settings->getString("general", "logLevel", "info")),
         core::LogLevel::Debug);
-#ifdef HAOCAM_BUILD_REV
     HAOCAM_LOG_INFO(kCategory, "HaoCam {} starting (build {})", "0.1.0",
                     HAOCAM_BUILD_REV);
-#else
-    HAOCAM_LOG_INFO(kCategory, "HaoCam {} starting", "0.1.0");
-#endif
 
     // Runtime configuration (credentials etc. - never logged, never committed).
     const core::AppConfig appConfig = core::AppConfig::load(configDir);

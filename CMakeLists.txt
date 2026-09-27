@@ -251,19 +251,17 @@ if(HAOCAM_BUILD_APP)
 
     qt_add_executable(haocam ${HAOCAM_APP_SOURCES})
 
-    # Embed the checked-out commit into the binary so every log line block
-    # proves which build produced it (Windows runtime verification loop).
-    execute_process(
-        COMMAND git rev-parse --short HEAD
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE HAOCAM_BUILD_REV
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET
-        RESULT_VARIABLE HAOCAM_GIT_RESULT)
-    if(NOT HAOCAM_GIT_RESULT EQUAL 0 OR HAOCAM_BUILD_REV STREQUAL "")
-        set(HAOCAM_BUILD_REV "unknown")
-    endif()
-    target_compile_definitions(haocam PRIVATE HAOCAM_BUILD_REV="${HAOCAM_BUILD_REV}")
+    # Embed the checked-out commit into the binary so every log proves which
+    # build produced it. Refreshed on EVERY build (a configure-time stamp went
+    # stale once and mislabeled a user-side log).
+    add_custom_target(haocam_build_stamp ALL
+        BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/haocam_build_rev.h"
+        COMMAND ${CMAKE_COMMAND}
+            -DREV_OUT=${CMAKE_CURRENT_BINARY_DIR}/haocam_build_rev.h
+            -DSRC_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteBuildRev.cmake)
+    add_dependencies(haocam haocam_build_stamp)
+    target_include_directories(haocam PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
     target_link_libraries(haocam PRIVATE
         haocam_core
