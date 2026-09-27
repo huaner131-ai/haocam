@@ -19,6 +19,10 @@
 #include <QStringList>
 #include <QVariantList>
 
+QT_BEGIN_NAMESPACE
+class QQuickWindow; // global scope - never an elaborated param (see below)
+QT_END_NAMESPACE
+
 #include "camera/CameraManager.h"
 #include "core/config/AppConfig.h"
 #include "core/events/EventBus.h"
@@ -47,7 +51,11 @@ public:
 
     // Render-thread entry point: fetches Qt Quick's D3D11 device and starts
     // the engine (Windows).
-    static bool attachToPipeline(class QQuickWindow* window, void* d3d11Device,
+    // NOTE: ::QQuickWindow (global, Qt Quick). An elaborated "class
+    // QQuickWindow" parameter here would resolve per-TU (declaring a NEW
+    // haocam::app::QQuickWindow in TUs without <QQuickWindow>), producing a
+    // different mangled symbol than the caller expects -> LNK2019.
+    static bool attachToPipeline(::QQuickWindow* window, void* d3d11Device,
                                  void* d3d11Context);
     static ::haocam::Compositor* sharedCompositor();
 

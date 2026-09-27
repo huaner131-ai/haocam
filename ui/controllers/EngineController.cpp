@@ -1,6 +1,7 @@
 #include "ui/controllers/EngineController.h"
 
 #include <QMetaObject>
+#include <QQuickWindow>
 
 #include "core/events/EventBus.h"
 #include "core/events/Events.h"
@@ -160,7 +161,7 @@ void EngineController::resetBeauty() {
 #endif
 }
 
-bool EngineController::attachToPipeline(QQuickWindow*, void* d3d11Device,
+bool EngineController::attachToPipeline(::QQuickWindow*, void* d3d11Device,
                                         void* d3d11Context) {
     EngineController* engine = sharedInstance();
     if (!engine) return false;
