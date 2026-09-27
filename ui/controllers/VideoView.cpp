@@ -8,8 +8,12 @@
 #include "ui/controllers/EngineController.h"
 
 #ifdef Q_OS_WIN
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <d3d11.h>
 #include "graphics/compositor/Compositor.h"
@@ -103,7 +107,13 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
                                               static_cast<int>(output.height)),
                                         1, QRhiTexture::Flags());
                     QRhiTexture::NativeTexture nativeDesc;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+                    // Qt 6.9 changed NativeTexture::object from void* to a
+                    // 64-bit integer handle.
+                    nativeDesc.object = reinterpret_cast<quint64>(native);
+#else
                     nativeDesc.object = native;
+#endif
                     nativeDesc.layout = 0;
                     if (rhiTexture && rhiTexture->createFrom(nativeDesc)) {
                         QSGTexture* qsgTexture = window()->createTextureFromRhiTexture(rhiTexture);

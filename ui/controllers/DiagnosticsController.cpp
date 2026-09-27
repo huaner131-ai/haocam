@@ -1,6 +1,7 @@
 #include "ui/controllers/DiagnosticsController.h"
 
 #include "core/logging/Logger.h"
+#include "effects/beauty/BeautyProvider.h"
 
 #ifdef Q_OS_WIN
 #include "graphics/compositor/Compositor.h"

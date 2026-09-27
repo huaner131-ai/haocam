@@ -25,6 +25,7 @@ class CameraController : public QObject {
 
 public:
     explicit CameraController(EngineController& engine, QObject* parent = nullptr);
+    ~CameraController() override;
 
     QVariantList devices() const { return m_devices; }
     QString selectedDeviceId() const { return m_selectedDeviceId; }
