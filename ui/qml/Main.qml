@@ -26,8 +26,9 @@ ApplicationWindow {
     title: "HAO CAM"
     color: bg
 
-    FontLoader { id: uiFont; family: "Segoe UI" }
-    font.family: uiFont.name
+    // System font, used directly by family name. (A FontLoader is only for
+    // loading font FILES; in Qt 6.11 it has no `family` property at all.)
+    font.family: "Segoe UI"
     font.pixelSize: 13
 
     ColumnLayout {

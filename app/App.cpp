@@ -95,12 +95,12 @@ bool App::startup() {
         // Diagnostics: which module layout actually got compiled in?
         HAOCAM_LOG_ERROR(
             kCategory,
-            "QML module probe: qmldir@:/qt/qml/HaoCam={} qmldir@:/HaoCam={} "
-            "Main@:/qt/qml/HaoCam/Main.qml={} Main@:/HaoCam/Main.qml={}",
+            "QML module probe: qmldir@:/qt/qml/HaoCam={} "
+            "Main@:/qt/qml/HaoCam/ui/qml/Main.qml={} "
+            "qmldir@:/qt/qml/HaoCam/ui/qml={}",
             QFile::exists(":/qt/qml/HaoCam/qmldir"),
-            QFile::exists(":/HaoCam/qmldir"),
-            QFile::exists(":/qt/qml/HaoCam/Main.qml"),
-            QFile::exists(":/HaoCam/Main.qml"));
+            QFile::exists(":/qt/qml/HaoCam/ui/qml/Main.qml"),
+            QFile::exists(":/qt/qml/HaoCam/ui/qml/qmldir"));
         return false;
     }
 
