@@ -19,7 +19,20 @@ cmake --preset windows-base
 cmake --build --preset windows --config Release
 ```
 
-The executable lands in `build/windows/Release/haocam.exe`. The QML module
+The executable lands in `build/windows/Release/haocam.exe`.
+
+IMPORTANT: close any running haocam.exe BEFORE rebuilding, otherwise the
+linker fails with `LNK1104: cannot open file ...haocam.exe`:
+
+    taskkill /IM haocam.exe /F 2>$null
+
+If the old instance is wedged in a driver-level deadlock, it may not die even
+with /F (threads stuck in kernel mode keep the image file locked). In that
+case the only reliable way out is a reboot - which also resets a possibly
+wedged USB camera stack. Validate the build actually succeeded
+(`haocam.vcxproj -> ...Release\haocam.exe`, no LNK1104) before launching.
+
+The QML module
 itself is compiled into the binary, but the Qt-provided QML modules
 (QtQuick.Layouts, QtQuick.Controls, ...) must be deployed - and windeployqt's
 binary scan alone misses QML-only modules. Always pass --qmldir:
