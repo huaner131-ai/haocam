@@ -6,6 +6,8 @@
 
 #include "core/events/EventBus.h"
 #include "core/events/Events.h"
+#include <atomic>
+
 #include "core/logging/Logger.h"
 #include "core/threading/NamedThread.h"
 #include "frame/FramePool.h"
@@ -246,6 +248,12 @@ double CameraManager::measuredFps() const {
 }
 
 void CameraManager::onFrame(Frame&& frame) {
+    static std::atomic<bool> s_firstFrameLogged{false};
+    if (!s_firstFrameLogged.exchange(true)) {
+        HAOCAM_LOG_INFO(kCategory,
+                        "First camera frame reached the engine queue ({}x{} gpu={})",
+                        frame.width, frame.height, frame.isGpu());
+    }
     m_framesCaptured.fetch_add(1, std::memory_order_relaxed);
     frame.metadata.mirrored = m_mirror.load(std::memory_order_relaxed);
     m_queue.push(std::move(frame));

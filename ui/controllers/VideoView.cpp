@@ -2,6 +2,7 @@
 
 #include <QQuickWindow>
 #include <QSGRendererInterface>
+#include <atomic>
 #include <rhi/qrhi.h>
 
 #include "core/logging/Logger.h"
@@ -55,6 +56,21 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
     if (!node) {
         node = new QSGSimpleTextureNode();
         node->setOwnsTexture(false);
+    }
+
+    // Freeze triage: proves the scene-graph render thread keeps syncing and
+    // shows whether the compositor ever produced output. If these lines stop
+    // while the ui-heartbeat continues, the render thread is wedged (GUI
+    // blocks at the next sync -> "Not Responding").
+    {
+        static std::atomic<uint64_t> s_syncCount{0};
+        const uint64_t syncNo = s_syncCount.fetch_add(1) + 1;
+        if (syncNo <= 3 || (syncNo % 300) == 0) {
+            auto* comp = EngineController::sharedCompositor();
+            HAOCAM_LOG_INFO(kCategory, "VideoView sync #{} (compositor={} latestFrame={})",
+                            syncNo, comp ? "ready" : "null",
+                            comp ? comp->latestFrameId() : 0);
+        }
     }
 
     // ---- First frame: fetch the scene graph D3D11 device and start ----

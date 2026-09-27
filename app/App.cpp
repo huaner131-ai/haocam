@@ -118,9 +118,9 @@ bool App::startup() {
     // Freeze triage: proves the QML/GUI event loop is still pumping. If these
     // lines STOP while the window looks frozen, the main thread itself is
     // blocked; if they keep coming, only the render/preview path is stuck.
-    auto* heartbeat = new QTimer(this);
+    auto* heartbeat = new QTimer(); // App is not a QObject - no parent
     heartbeat->setInterval(5000);
-    connect(heartbeat, &QTimer::timeout, this, [] {
+    QObject::connect(heartbeat, &QTimer::timeout, heartbeat, [] {
         HAOCAM_LOG_INFO(kCategory, "ui-heartbeat: main thread alive");
     });
     heartbeat->start();
