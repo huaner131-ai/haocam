@@ -251,6 +251,20 @@ if(HAOCAM_BUILD_APP)
 
     qt_add_executable(haocam ${HAOCAM_APP_SOURCES})
 
+    # Embed the checked-out commit into the binary so every log line block
+    # proves which build produced it (Windows runtime verification loop).
+    execute_process(
+        COMMAND git rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE HAOCAM_BUILD_REV
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        RESULT_VARIABLE HAOCAM_GIT_RESULT)
+    if(NOT HAOCAM_GIT_RESULT EQUAL 0 OR HAOCAM_BUILD_REV STREQUAL "")
+        set(HAOCAM_BUILD_REV "unknown")
+    endif()
+    target_compile_definitions(haocam PRIVATE HAOCAM_BUILD_REV="${HAOCAM_BUILD_REV}")
+
     target_link_libraries(haocam PRIVATE
         haocam_core
         Qt6::Qml

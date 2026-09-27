@@ -2,6 +2,7 @@
 
 #include <QFile>
 #include <QQuickWindow>
+#include <QTimer>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QSGRendererInterface>
@@ -37,7 +38,12 @@ bool App::startup() {
         logDir, core::logLevelFromString(
                     settings->getString("general", "logLevel", "info")),
         core::LogLevel::Debug);
+#ifdef HAOCAM_BUILD_REV
+    HAOCAM_LOG_INFO(kCategory, "HaoCam {} starting (build {})", "0.1.0",
+                    HAOCAM_BUILD_REV);
+#else
     HAOCAM_LOG_INFO(kCategory, "HaoCam {} starting", "0.1.0");
+#endif
 
     // Runtime configuration (credentials etc. - never logged, never committed).
     const core::AppConfig appConfig = core::AppConfig::load(configDir);
@@ -109,6 +115,16 @@ bool App::startup() {
     QMetaObject::invokeMethod(
         m_cameraController.get(), [this] { m_cameraController->refreshDevices(); },
         Qt::QueuedConnection);
+    // Freeze triage: proves the QML/GUI event loop is still pumping. If these
+    // lines STOP while the window looks frozen, the main thread itself is
+    // blocked; if they keep coming, only the render/preview path is stuck.
+    auto* heartbeat = new QTimer(this);
+    heartbeat->setInterval(5000);
+    connect(heartbeat, &QTimer::timeout, this, [] {
+        HAOCAM_LOG_INFO(kCategory, "ui-heartbeat: main thread alive");
+    });
+    heartbeat->start();
+
     HAOCAM_LOG_INFO(kCategory, "Startup complete");
     return true;
 }

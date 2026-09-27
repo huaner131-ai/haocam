@@ -124,6 +124,7 @@ bool CameraManager::start(const std::string& deviceId) {
         m_watchdogThread = std::make_unique<std::thread>([this] {
             core::setThreadName("haocam-watchdog");
             int reconnectDelayMs = kReconnectBaseDelayMs;
+            bool awaitedFrameAfterReconnect = false;
             auto lastFrameTime = std::chrono::steady_clock::now();
             uint64_t lastFrameCount = 0;
             while (m_running.load()) {
@@ -140,6 +141,7 @@ bool CameraManager::start(const std::string& deviceId) {
                     lastFrameTime = now;
                     lastFrameCount = count;
                     reconnectDelayMs = kReconnectBaseDelayMs;
+                    awaitedFrameAfterReconnect = false;
                     continue;
                 }
 
@@ -154,9 +156,26 @@ bool CameraManager::start(const std::string& deviceId) {
                 }
                 if (!shouldReconnect || !reconnectSource) continue;
 
+                // A reconnect that produced no frames before the next tick is
+                // failed recovery: back off instead of re-opening the device
+                // several times per second (hammering a wedged USB camera can
+                // stall the whole host controller).
+                if (awaitedFrameAfterReconnect) {
+                    reconnectDelayMs =
+                        std::min(reconnectDelayMs * 2, kReconnectMaxDelayMs);
+                    HAOCAM_LOG_WARN(kCategory,
+                                    "Camera produced no frames after reconnect; "
+                                    "next attempt in {} ms",
+                                    reconnectDelayMs);
+                    std::this_thread::sleep_for(
+                        std::chrono::milliseconds(reconnectDelayMs));
+                    awaitedFrameAfterReconnect = false;
+                    continue;
+                }
                 HAOCAM_LOG_INFO(kCategory, "Reconnection attempt...");
                 if (reconnectSource->start(reconnectDeviceId, CameraFormatPreference{})) {
                     HAOCAM_LOG_INFO(kCategory, "Camera reconnected");
+                    awaitedFrameAfterReconnect = true;
                 } else {
                     reconnectDelayMs =
                         std::min(reconnectDelayMs * 2, kReconnectMaxDelayMs);
