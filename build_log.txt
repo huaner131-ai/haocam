@@ -1,37 +1,167 @@
-PS C:\Users\fourk> cd D:\cam\haocam
-PS D:\cam\haocam> git pull
-Already up to date.
-PS D:\cam\haocam> git log --oneline -1
-29449b3 (HEAD -> arena/01a0de8b-haocam, origin/arena/01a0de8b-haocam) Fix remaining MSVC/Qt 6.11 errors: CameraController dtor decl, IBeautyProvider include, QRhi NativeTexture::object (quint64 since 6.9), macro guards
-PS D:\cam\haocam> cmake --build --preset windows --config Release
-MSBuild version 17.14.60+43b635718 for .NET Framework
+PS D:\cam\haocam> ls build\windows\Release\haocam.exe
 
-  haocam_core.vcxproj -> D:\cam\haocam\build\windows\Release\haocam_core.lib
-  haocam_qmltyperegistrations.cpp
-D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(23,34): error C2065: 'haocam': undeclared identifier [D:\ca
-m\haocam\build\windows\haocam.vcxproj]
-D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(23,34): error C2653: 'haocam': is not a class or namespace
-name [D:\cam\haocam\build\windows\haocam.vcxproj]
-D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(23,47): error C2065: 'VideoView': undeclared identifier [D:
-\cam\haocam\build\windows\haocam.vcxproj]
-D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(23,5): error C2672: 'qmlRegisterTypesAndRevisions': no matc
-hing overloaded function found [D:\cam\haocam\build\windows\haocam.vcxproj]
-      C:\Qt\6.11.2\msvc2022_64\include\QtQmlIntegration\qqmlintegration.h(33,6):
-      could be 'void qmlRegisterTypesAndRevisions(const char *,int,QList<int> *)'
-          D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(23,47):
-          'qmlRegisterTypesAndRevisions': invalid template argument for 'T', type expected
 
-D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(24,30): error C2065: 'QQuickItem': undeclared identifier [D
-:\cam\haocam\build\windows\haocam.vcxproj]
-D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(24,5): error C2672: 'qmlRegisterAnonymousType': no matching
- overloaded function found [D:\cam\haocam\build\windows\haocam.vcxproj]
-      C:\Qt\6.11.2\msvc2022_64\include\QtQml\qqml.h(94,5):
-      could be 'int qmlRegisterAnonymousType(const char *,int)'
-          D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(24,30):
-          'qmlRegisterAnonymousType': invalid template argument for 'T', type expected
-      C:\Qt\6.11.2\msvc2022_64\include\QtQml\qqml.h(60,5):
-      or       'int qmlRegisterAnonymousType(const char *,int)'
-          D:\cam\haocam\build\windows\haocam_qmltyperegistrations.cpp(24,30):
-          'qmlRegisterAnonymousType': invalid template argument for 'T', type expected
+    Directory: D:\cam\haocam\build\windows\Release
 
-  haocam_tests.vcxproj -> D:\cam\haocam\build\windows\Release\haocam_tests.exe
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/27/2026   9:14 PM         697344 haocam.exe
+
+
+PS D:\cam\haocam> C:\Qt\6.11.2\msvc2022_64\bin\windeployqt build\windows\Release\haocam.exe
+Adding local dependencyD:/cam/haocam/build/windows/Release/D3DCOMPILER_47.dll
+D:\cam\haocam\build\windows\Release\haocam.exe 64 bit, release executable [QML]
+Adding in plugin type generic for module: Qt6Gui
+Adding in plugin type iconengines for module: Qt6Gui
+Adding Qt6Svg for qsvgicon.dll from plugin type: iconengines
+Adding in plugin type imageformats for module: Qt6Gui
+Adding in plugin type networkinformation for module: Qt6Network
+Adding in plugin type platforms for module: Qt6Gui
+Adding in plugin type qmltooling for module: Qt6Qml
+Adding Qt6Quick3DUtils for qmldbg_quick3dprofiler.dll from plugin type: qmltooling
+Adding in plugin type tls for module: Qt6Network
+Skipping plugin qopensslbackend.dll. Use -force-openssl or specify -openssl-root if you want to use it.
+Performing additional pass of finding Qt plugins due to updated Qt module list: Qt6Core Qt6Gui Qt6Network Qt6OpenGL Qt6Qml Qt6QmlMeta Qt6QmlModels Qt6QmlWorkerScript Qt6Quick Qt6Quick3DUtils Qt6Svg
+Adding in plugin type generic for module: Qt6Gui
+Adding in plugin type iconengines for module: Qt6Gui
+Adding in plugin type imageformats for module: Qt6Gui
+Adding in plugin type networkinformation for module: Qt6Network
+Adding in plugin type platforms for module: Qt6Gui
+Adding in plugin type qmltooling for module: Qt6Qml
+Adding in plugin type tls for module: Qt6Network
+Skipping plugin qopensslbackend.dll. Use -force-openssl or specify -openssl-root if you want to use it.
+Direct dependencies: Qt6Core Qt6Gui Qt6Network Qt6OpenGL Qt6Qml Qt6QmlMeta Qt6QmlModels Qt6QmlWorkerScript Qt6Quick
+All dependencies   : Qt6Core Qt6Gui Qt6Network Qt6OpenGL Qt6Qml Qt6QmlMeta Qt6QmlModels Qt6QmlWorkerScript Qt6Quick
+To be deployed     : Qt6Core Qt6Gui Qt6Network Qt6OpenGL Qt6Qml Qt6QmlMeta Qt6QmlModels Qt6QmlWorkerScript Qt6Quick Qt6Quick3DUtils Qt6Svg
+Warning: Cannot find any version of the dxcompiler.dll and dxil.dll. This is not a problem unless Direct3D 12 and certain features are used by the application.
+Warning: Cannot find Visual Studio installation directory, VCINSTALLDIR is not set.
+Skipping system library C:/WINDOWS/system32/icuuc.dll
+Qt6Core.dll is up to date.
+Qt6Gui.dll is up to date.
+Qt6Network.dll is up to date.
+Qt6OpenGL.dll is up to date.
+Qt6Qml.dll is up to date.
+Qt6QmlMeta.dll is up to date.
+Qt6QmlModels.dll is up to date.
+Qt6QmlWorkerScript.dll is up to date.
+Qt6Quick.dll is up to date.
+Qt6Quick3DUtils.dll is up to date.
+Qt6Svg.dll is up to date.
+opengl32sw.dll is up to date.
+D3Dcompiler_47.dll is up to date.
+qtuiotouchplugin.dll is up to date.
+qsvgicon.dll is up to date.
+qgif.dll is up to date.
+qico.dll is up to date.
+qjpeg.dll is up to date.
+qsvg.dll is up to date.
+qnetworklistmanager.dll is up to date.
+qwindows.dll is up to date.
+qmldbg_debugger.dll is up to date.
+qmldbg_inspector.dll is up to date.
+qmldbg_local.dll is up to date.
+qmldbg_messages.dll is up to date.
+qmldbg_native.dll is up to date.
+qmldbg_nativedebugger.dll is up to date.
+qmldbg_preview.dll is up to date.
+qmldbg_profiler.dll is up to date.
+qmldbg_quick3dprofiler.dll is up to date.
+qmldbg_quickeventreplay.dll is up to date.
+qmldbg_quickprofiler.dll is up to date.
+qmldbg_server.dll is up to date.
+qmldbg_tcp.dll is up to date.
+qcertonlybackend.dll is up to date.
+qschannelbackend.dll is up to date.
+Creating qt_ar.qm...
+Creating qt_bg.qm...
+Creating qt_ca.qm...
+Creating qt_cs.qm...
+Creating qt_da.qm...
+Creating qt_de.qm...
+Creating qt_en.qm...
+Creating qt_es.qm...
+Creating qt_fa.qm...
+Creating qt_fi.qm...
+Creating qt_fr.qm...
+Creating qt_gd.qm...
+Creating qt_he.qm...
+Creating qt_hr.qm...
+Creating qt_hu.qm...
+Creating qt_it.qm...
+Creating qt_ja.qm...
+Creating qt_ka.qm...
+Creating qt_ko.qm...
+Creating qt_lg.qm...
+Creating qt_lv.qm...
+Creating qt_nl.qm...
+Creating qt_nn.qm...
+Creating qt_pl.qm...
+Creating qt_pt_BR.qm...
+Creating qt_ru.qm...
+Creating qt_sk.qm...
+Creating qt_sv.qm...
+Creating qt_tr.qm...
+Creating qt_uk.qm...
+Creating qt_zh_CN.qm...
+Creating qt_zh_TW.qm...
+PS D:\cam\haocam> $out = .\build\windows\Release\haocam.exe 2>&1 | Out-String
+PS D:\cam\haocam> $out
+.\build\windows\Release\haocam.exe : [2026-09-27 21:26:04.319] [ERROR] [app       ] QML main window failed to load
+At line:1 char:8
++ $out = .\build\windows\Release\haocam.exe 2>&1 | Out-String
++        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2026-09-27 21:... failed to load:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+[2026-09-27 21:26:04.314] [INFO ] [settings  ] No settings file yet, using defaults: C:\Users\fourk\AppData\Local\HaoCam\settings.json
+[2026-09-27 21:26:04.315] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-27 21:26:04.315] [INFO ] [app       ] HaoCam 0.1.0 starting
+[2026-09-27 21:26:04.315] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-27 21:26:04.319] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:26:04.320] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:26:04.320] [INFO ] [camera    ] Camera stopped
+
+PS D:\cam\haocam> echo "ExitCode: $LASTEXITCODE"
+ExitCode: 1
+PS D:\cam\haocam> Get-ChildItem $env:LOCALAPPDATA\HaoCam\logs -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+
+    Directory: C:\Users\fourk\AppData\Local\HaoCam\logs
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         9/27/2026   9:26 PM           2464 haocam.log
+
+
+PS D:\cam\haocam> Get-Content "$env:LOCALAPPDATA\HaoCam\logs\haocam.log" -Tail 30 -ErrorAction SilentlyContinue
+[2026-09-27 21:16:35.058] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-27 21:16:35.058] [INFO ] [app       ] HaoCam 0.1.0 starting
+[2026-09-27 21:16:35.058] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-27 21:16:35.062] [ERROR] [app       ] QML main window failed to load
+[2026-09-27 21:16:35.062] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:16:35.062] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:16:35.063] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:17:19.238] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-27 21:17:19.238] [INFO ] [app       ] HaoCam 0.1.0 starting
+[2026-09-27 21:17:19.238] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-27 21:17:19.242] [ERROR] [app       ] QML main window failed to load
+[2026-09-27 21:17:19.242] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:17:19.243] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:17:19.243] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:18:25.801] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-27 21:18:25.801] [INFO ] [app       ] HaoCam 0.1.0 starting
+[2026-09-27 21:18:25.801] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-27 21:18:25.805] [ERROR] [app       ] QML main window failed to load
+[2026-09-27 21:18:25.805] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:18:25.806] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:18:25.806] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:26:04.315] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-27 21:26:04.315] [INFO ] [app       ] HaoCam 0.1.0 starting
+[2026-09-27 21:26:04.315] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-27 21:26:04.319] [ERROR] [app       ] QML main window failed to load
+[2026-09-27 21:26:04.319] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:26:04.320] [INFO ] [camera    ] Camera stopped
+[2026-09-27 21:26:04.320] [INFO ] [camera    ] Camera stopped
+PS D:\cam\haocam>
