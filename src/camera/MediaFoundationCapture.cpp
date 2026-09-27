@@ -28,9 +28,17 @@
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mfuuid.lib")
 
+using Microsoft::WRL::ComPtr;
+
 namespace haocam {
 
-using Microsoft::WRL::ComPtr;
+namespace {
+bool sameMode(const CameraFormatDesc& a, const CameraFormatDesc& b) {
+    return a.resolution == b.resolution && a.fpsNumerator == b.fpsNumerator &&
+           a.fpsDenominator == b.fpsDenominator && a.pixelFormat == b.pixelFormat;
+}
+} // namespace
+
 
 namespace {
 constexpr const char* kCategory = "camera";
@@ -159,6 +167,34 @@ ComPtr<IMFActivate> findActivation(const std::string& symbolicLink) {
 }
 
 } // namespace
+
+void MediaFoundationCapture::rememberFailedMode(const CameraFormatDesc& mode) {
+    std::lock_guard<std::mutex> lock(m_failedModesMutex);
+    for (const auto& known : m_failedModes) {
+        if (sameMode(known, mode)) return;
+    }
+    m_failedModes.push_back(mode);
+    HAOCAM_LOG_WARN(kCategory,
+                    "Mode blacklisted after streaming failure: {} ({} mode(s) excluded "
+                    "from now on)",
+                    describeFormat(mode), m_failedModes.size());
+}
+
+std::vector<CameraFormatDesc> MediaFoundationCapture::usableFormats(
+    const std::vector<CameraFormatDesc>& native) const {
+    std::lock_guard<std::mutex> lock(m_failedModesMutex);
+    if (m_failedModes.empty()) return native;
+    std::vector<CameraFormatDesc> usable;
+    for (const auto& f : native) {
+        bool failed = false;
+        for (const auto& bad : m_failedModes) {
+            if (sameMode(bad, f)) { failed = true; break; }
+        }
+        if (!failed) usable.push_back(f);
+    }
+    return usable;
+}
+
 
 MediaFoundationCapture::~MediaFoundationCapture() { stop(); }
 
@@ -317,6 +353,13 @@ void MediaFoundationCapture::run(const std::string& deviceId,
 
     const DWORD stream = MF_SOURCE_READER_FIRST_VIDEO_STREAM;
 
+    {
+        std::lock_guard<std::mutex> lock(m_failedModesMutex);
+        if (deviceId != m_lastStartedDevice) {
+            m_failedModes.clear(); // new device: previous failures are irrelevant
+            m_lastStartedDevice = deviceId;
+        }
+    }
     const std::vector<CameraFormatDesc> native = enumerateNativeFormats(reader.Get(), stream);
     if (native.empty()) {
         m_state = CameraState::Failed;
@@ -325,7 +368,16 @@ void MediaFoundationCapture::run(const std::string& deviceId,
         }
         return;
     }
-    const CameraFormatDesc* best = pickBestFormat(native, preference);
+    // Skip modes that already failed to stream on this device; if everything
+    // is blacklisted, try the full list again rather than nothing.
+    std::vector<CameraFormatDesc> candidates = usableFormats(native);
+    if (candidates.size() != native.size()) {
+        HAOCAM_LOG_INFO(kCategory,
+                        "Excluding {} previously failing mode(s) from selection",
+                        native.size() - candidates.size());
+    }
+    if (candidates.empty()) candidates = native;
+    const CameraFormatDesc* best = pickBestFormat(candidates, preference);
     if (!best) best = &native.front();
     HAOCAM_LOG_INFO(kCategory, "Selected camera mode: {}", describeFormat(*best));
 
@@ -379,15 +431,17 @@ void MediaFoundationCapture::run(const std::string& deviceId,
     uint64_t framesPublished = 0;
     while (!m_stopRequested.load()) {
         DWORD flags = 0;
+        DWORD actualStream = 0;
         LONGLONG sampleTime100ns = 0;
         ComPtr<IMFSample> sample;
         const HRESULT hr =
-            reader->ReadSample(stream, 0, &flags, nullptr, &sampleTime100ns,
+            reader->ReadSample(stream, 0, &flags, &actualStream, &sampleTime100ns,
                                sample.GetAddressOf());
         if (FAILED(hr)) {
             char detail[64];
             std::snprintf(detail, sizeof(detail), "ReadSample failed (hr=0x%08lX)",
                           static_cast<unsigned long>(hr));
+            rememberFailedMode(m_activeFormat); // reconnect must pick another mode
             m_state = CameraState::Reconnecting;
             if (m_callbacks.onStateChanged) {
                 m_callbacks.onStateChanged(CameraState::Reconnecting, detail);
@@ -395,6 +449,7 @@ void MediaFoundationCapture::run(const std::string& deviceId,
             break;
         }
         if (flags & MF_SOURCE_READERF_ERROR) {
+            rememberFailedMode(m_activeFormat);
             m_state = CameraState::Reconnecting;
             if (m_callbacks.onStateChanged) {
                 m_callbacks.onStateChanged(CameraState::Reconnecting, "Source reader error");

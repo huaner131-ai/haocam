@@ -16,6 +16,9 @@
 //   * All COM objects are created, used and released on the camera thread.
 
 #include <atomic>
+#include <mutex>
+#include <string>
+#include <vector>
 #include <thread>
 
 #include "camera/ICameraSource.h"
@@ -59,6 +62,20 @@ private:
     CameraFormatDesc m_activeFormat;
     CameraFormatDesc m_requestedFormat;
     std::atomic<bool> m_hasRequestedFormat{false};
+
+    // Modes that failed to stream (device cannot sustain them). Excluded from
+    // format selection on every (re)start so reconnects DOWN away from an
+    // unsustainable mode instead of re-picking it forever. Reset on device
+    // change; guarded because start() (watchdog) reads while the capture
+    // thread writes.
+    mutable std::mutex m_failedModesMutex;
+    std::vector<CameraFormatDesc> m_failedModes;
+    std::string m_lastStartedDevice;
+
+    void rememberFailedMode(const CameraFormatDesc& mode);
+    std::vector<CameraFormatDesc> usableFormats(
+        const std::vector<CameraFormatDesc>& native) const;
+
     std::thread m_thread;
 };
 
