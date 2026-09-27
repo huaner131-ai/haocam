@@ -3,13 +3,13 @@
 // Windows camera capture through the Media Foundation Source Reader.
 //
 // Design notes (see docs/CAMERA.md):
-//   * Frames stay GPU-resident: the reader is configured with an
-//     IMFDXGIDeviceManager so NV12 samples surface as ID3D11Texture2D.
-//     Each sample is CopySubresourceRegion'd into a pooled texture with
-//     SHADER_RESOURCE binding (decoder outputs are array slices without
-//     SRV binding and must not be used directly).
-//   * If a device/convert path produces CPU buffers instead, the frame is
-//     published with a CPU buffer and uploaded once by the render layer.
+//   * Frames arrive as CPU NV12 samples. Sharing a D3D11 device between
+//     Media Foundation and the Qt render thread deadlocked the NVIDIA driver
+//     stack (mfplat vs d3d11.dll, stacks 2026-09-28), so MF runs with no
+//     D3D11 device; the engine thread uploads each frame to the render
+//     device exactly once (GPU-resident from that point on).
+//   * The zero-copy device-manager path is kept in code behind
+//     kEnableGpuCapture=false for a future keyed-mutex cross-device design.
 //   * Device removal / ReadSample errors transition to Reconnecting; the
 //     CameraManager watchdog retries with backoff. HaoCam never crashes
 //     when a camera disappears.

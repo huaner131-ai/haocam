@@ -12,6 +12,9 @@
 
 #ifdef Q_OS_WIN
 #include "graphics/compositor/Compositor.h"
+#if defined(_WIN32)
+#include "graphics/D3D11/D3D11MultithreadCompat.h"
+#endif
 #endif
 
 struct ID3D11Device;
@@ -76,6 +79,14 @@ bool EngineController::attachRenderDevice(void* d3d11Device, void* d3d11Context)
     if (m_attachThread.joinable()) m_attachThread.join();
     m_attachThread = std::thread([this, device, context] {
         core::setThreadName("haocam-attach");
+        // The engine thread (camera uploads) and the QSG render thread share
+        // this device; serialize immediate-context access at the driver level.
+        // Media Foundation is deliberately NOT given this device anymore -
+        // see MediaFoundationCapture.cpp (driver-level deadlock).
+        if (gfx::enableDeviceMultithreadProtect(
+                const_cast<ID3D11Device*>(static_cast<const ID3D11Device*>(device)))) {
+            HAOCAM_LOG_INFO(kCategory, "Render device multithread protection enabled");
+        }
         EffectContext attachContext;
         attachContext.device = const_cast<ID3D11Device*>(
             static_cast<const ID3D11Device*>(device));
@@ -96,8 +107,10 @@ bool EngineController::attachRenderDevice(void* d3d11Device, void* d3d11Context)
         HAOCAM_LOG_INFO(kCategory, "attach-async: stage=engine-thread");
         startEngineThread();
         HAOCAM_LOG_INFO(kCategory, "attach-async: stage=camera");
-        m_camera->setExternalCaptureDevice(
-            const_cast<ID3D11Device*>(static_cast<const ID3D11Device*>(device)));
+        // NOTE: the render device is NOT passed to the camera. Media
+        // Foundation on the render device deadlocked the driver (mfplat vs
+        // d3d11.dll, stacks 2026-09-28). Camera frames arrive as CPU NV12 and
+        // are uploaded by the engine thread instead.
         startCamera();
         HAOCAM_LOG_INFO(kCategory, "Engine attached to Qt Quick D3D11 device");
 

@@ -297,11 +297,26 @@ void MediaFoundationCapture::run(const std::string& deviceId,
     }
 
     // ---- GPU capture setup ----
-    ComPtr<ID3D11Device> device = createMfDevice(m_externalDevice);
+    // DISABLED (2026-09-28, stacks captured on the user machine): sharing the
+    // Qt render device with Media Foundation deadlocked the NVIDIA driver
+    // stack - QSGRenderThread blocked inside d3d11.dll while haocam-capture
+    // sat in mfplat.dll on the SAME device; the GUI then froze at the next
+    // sync ("Not Responding", 0% CPU everywhere). Until cross-device sharing
+    // (keyed-mutex shared handles) is properly implemented, MF must not touch
+    // ANY D3D11 device: it delivers CPU NV12 samples and the engine thread
+    // uploads each frame to the render device exactly once.
+    constexpr bool kEnableGpuCapture = false;
+    ComPtr<ID3D11Device> device; // null: no D3D11 device for Media Foundation
+    if (kEnableGpuCapture) device = createMfDevice(m_externalDevice);
     const bool gpuCapture = device && enableMultithreadProtect(device.Get());
     ComPtr<IMFDXGIDeviceManager> dxgiManager;
     if (gpuCapture && !createDxgiManager(device.Get(), dxgiManager)) {
         HAOCAM_LOG_WARN(kCategory, "IMFDXGIDeviceManager unavailable; using CPU buffers");
+    }
+    if (!gpuCapture) {
+        HAOCAM_LOG_INFO(kCategory,
+                        "Capture: CPU NV12 samples (MF kept off all D3D11 devices; "
+                        "the engine uploads each frame to the GPU once)");
     }
 
     // ---- Source reader ----
