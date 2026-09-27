@@ -1,5 +1,6 @@
 #include "app/App.h"
 
+#include <QFile>
 #include <QQuickWindow>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -72,6 +73,15 @@ bool App::startup() {
     QObject::connect(
         &m_qmlEngine, &QQmlApplicationEngine::objectCreationFailed, &m_qmlEngine,
         [] { QCoreApplication::exit(2); }, Qt::QueuedConnection);
+    // Route QML warnings into the HaoCam log (they otherwise only reach the
+    // stderr of a windowless process).
+    QObject::connect(
+        &m_qmlEngine, &QQmlApplicationEngine::warnings, &m_qmlEngine,
+        [](const QList<QQmlError>& warnings) {
+            for (const QQmlError& warning : warnings) {
+                HAOCAM_LOG_ERROR("app", "QML: {}", warning.toString().toStdString());
+            }
+        });
 
     // VideoView is registered manually: Qt 6.11's qmltyperegistration does
     // not emit the header include for absolutely-pathed sources (the other
@@ -82,6 +92,15 @@ bool App::startup() {
     m_qmlLoaded = !m_qmlEngine.rootObjects().isEmpty();
     if (!m_qmlLoaded) {
         HAOCAM_LOG_ERROR(kCategory, "QML main window failed to load");
+        // Diagnostics: which module layout actually got compiled in?
+        HAOCAM_LOG_ERROR(
+            kCategory,
+            "QML module probe: qmldir@:/qt/qml/HaoCam={} qmldir@:/HaoCam={} "
+            "Main@:/qt/qml/HaoCam/Main.qml={} Main@:/HaoCam/Main.qml={}",
+            QFile::exists(":/qt/qml/HaoCam/qmldir"),
+            QFile::exists(":/HaoCam/qmldir"),
+            QFile::exists(":/qt/qml/HaoCam/Main.qml"),
+            QFile::exists(":/HaoCam/Main.qml"));
         return false;
     }
 

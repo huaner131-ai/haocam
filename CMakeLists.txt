@@ -224,6 +224,10 @@ if(HAOCAM_BUILD_APP)
     endif()
 
     qt_standard_project_setup()
+    # Pin the QML module layout to the modern ":/qt/qml/" resource prefix -
+    # what loadFromModule() resolves in Qt 6.11 (silences QTP0001/QTP0004).
+    qt_policy(SET QTP0001 NEW)
+    qt_policy(SET QTP0004 NEW)
 
     # NOTE: source paths must be ABSOLUTE - Qt 6.11's qt_add_executable
     # resolves relative paths against the build directory.
