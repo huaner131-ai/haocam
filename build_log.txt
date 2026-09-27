@@ -1,18 +1,119 @@
-PS D:\cam\haocam> Get-Content "$env:LOCALAPPDATA\HaoCam\logs\haocam.log" -Tail 30
-[2026-09-27 23:34:20.054] [WARN ] [camera    ] Camera state Reconnecting : ReadSample failed (hr=0x80004003)
-[2026-09-27 23:34:20.435] [INFO ] [camera    ] Reconnection attempt...
-[2026-09-27 23:34:20.436] [INFO ] [camera    ] Camera reconnected
-[2026-09-27 23:34:20.936] [INFO ] [camera    ] Reconnection attempt...
-[2026-09-27 23:59:11.471] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
-[2026-09-27 23:59:11.471] [INFO ] [app       ] HaoCam 0.1.0 starting
-[2026-09-27 23:59:11.471] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
-[2026-09-27 23:59:11.703] [INFO ] [app       ] Startup complete
-[2026-09-27 23:59:11.705] [INFO ] [camera    ] Enumerated 4 camera device(s)
-[2026-09-27 23:59:11.908] [INFO ] [engine    ] attach: render thread handed over the device
-[2026-09-27 23:59:11.908] [INFO ] [engine    ] attach-async: stage=pipeline-init
-[2026-09-27 23:59:11.931] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
-[2026-09-27 23:59:11.931] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
-[2026-09-27 23:59:11.931] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+PS C:\Users\fourk> cd D:\cam\haocam
+PS D:\cam\haocam> git pull                    # HARUS sampai 879cc44
+remote: Enumerating objects: 15, done.
+remote: Counting objects: 100% (15/15), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 8 (delta 6), reused 8 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (8/8), 2.12 KiB | 114.00 KiB/s, done.
+From https://github.com/huaner131-ai/haocam
+   52e9590..879cc44  arena/01a0de8b-haocam -> origin/arena/01a0de8b-haocam
+Updating 52e9590..879cc44
+Fast-forward
+ CMakeLists.txt               | 14 ++++++++++++++
+ app/App.cpp                  | 16 ++++++++++++++++
+ src/camera/CameraManager.cpp | 19 +++++++++++++++++++
+ 3 files changed, 49 insertions(+)
+PS D:\cam\haocam> cmake --build --preset windows --config Release
+CMake is re-running because D:/cam/haocam/build/windows/CMakeFiles/generate.stamp is out-of-date.
+  the file 'D:/cam/haocam/CMakeLists.txt'
+  is newer than 'D:/cam/haocam/build/windows/CMakeFiles/generate.stamp.depend'
+  result='-1'
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
+-- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR)
+-- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR)
+CMake Warning at C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6/QtPublicDependencyHelpers.cmake:339 (message):
+  This project is using headers of the GuiPrivate module and will therefore
+  be tied to this specific Qt module build version.  Running this project
+  against other versions of the Qt modules may crash at any arbitrary point.
+  This is not a bug, but a result of using Qt internals.  You have been
+  warned!
+
+  You can disable this warning by setting QT_NO_PRIVATE_MODULE_WARNING to ON.
+Call Stack (most recent call first):
+  C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6GuiPrivate/Qt6GuiPrivateConfig.cmake:48 (_qt_internal_show_private_module_warning)
+  C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake:257 (find_package)
+  CMakeLists.txt:223 (find_package)
+
+
+-- Configuring done (5.1s)
+-- Generating done (1.5s)
+-- Build files have been written to: D:/cam/haocam/build/windows
+MSBuild version 17.14.60+43b635718 for .NET Framework
+
+  CameraManager.cpp
+  haocam_core.vcxproj -> D:\cam\haocam\build\windows\Release\haocam_core.lib
+  1>Automatic MOC and UIC for target haocam
+  Running AUTOMOC file extraction for target haocam
+  Running moc --collect-json for target haocam
+  Generating meta_types/qt6haocam_metatypes.json
+  Automatic QML type registration for target haocam
+  Generating .rcc/qmlcache/haocam_ui_qml_Main_qml.cpp, .rcc/qmlcache/haocam_ui_qml_Main_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_CameraView_qml.cpp, .rcc/qmlcache/haocam_ui_qml_CameraView_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_CameraPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_CameraPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_BeautyPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_BeautyPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_MakeupPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_MakeupPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_ARPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_ARPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_FilterPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_FilterPanel_qml.cpp.aotstats
+  Generating .rcc/qmlcache/haocam_ui_qml_RecordingPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_RecordingPanel_qml.cpp.aot
+  stats
+  Generating .rcc/qmlcache/haocam_ui_qml_SettingsPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_SettingsPanel_qml.cpp.aotst
+  ats
+  main.cpp
+  App.cpp
+  EngineController.cpp
+  CameraController.cpp
+  BeautyController.cpp
+  FilterController.cpp
+  DiagnosticsController.cpp
+  VideoView.cpp
+  qrc_qmake_HaoCam.cpp
+  haocam_qmlcache_loader.cpp
+  haocam_ui_qml_Main_qml.cpp
+  haocam_ui_qml_CameraView_qml.cpp
+  haocam_ui_qml_CameraPanel_qml.cpp
+D:\cam\haocam\app\App.cpp(121,33): error C2665: 'QTimer::QTimer': no overloaded function could convert all the argument
+ types [D:\cam\haocam\build\windows\haocam.vcxproj]
+      C:\Qt\6.11.2\msvc2022_64\include\QtCore\qtimer.h(152,5):
+      could be 'QTimer::QTimer(const QTimer &)'
+          D:\cam\haocam\app\App.cpp(121,33):
+          'QTimer::QTimer(const QTimer &)': cannot convert argument 1 from 'haocam::app::App *' to 'const QTimer &'
+              D:\cam\haocam\app\App.cpp(121,34):
+              Reason: cannot convert from 'haocam::app::App *' to 'const QTimer'
+      C:\Qt\6.11.2\msvc2022_64\include\QtCore\qtimer.h(29,5):
+      or       'QTimer::QTimer(QObject *)'
+          D:\cam\haocam\app\App.cpp(121,33):
+          'QTimer::QTimer(QObject *)': cannot convert argument 1 from 'haocam::app::App *' to 'QObject *'
+              D:\cam\haocam\app\App.cpp(121,34):
+              Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or parenthesized funct
+  ion-style cast
+      D:\cam\haocam\app\App.cpp(121,33):
+      while trying to match the argument list '(haocam::app::App *)'
+
+D:\cam\haocam\app\App.cpp(123,5): error C3861: 'connect': identifier not found [D:\cam\haocam\build\windows\haocam.vcxp
+roj]
+  haocam_ui_qml_BeautyPanel_qml.cpp
+  haocam_ui_qml_MakeupPanel_qml.cpp
+C:\Qt\6.11.2\msvc2022_64\include\QtCore\qmetatype.h(502,1): warning C4702: unreachable code [D:\cam\haocam\build\window
+s\haocam.vcxproj]
+C:\Qt\6.11.2\msvc2022_64\include\QtCore\qvariant.h(723,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
+\haocam.vcxproj]
+C:\Qt\6.11.2\msvc2022_64\include\QtCore\qvariant.h(728,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
+\haocam.vcxproj]
+C:\Qt\6.11.2\msvc2022_64\include\QtQml\qjsengine.h(112,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
+\haocam.vcxproj]
+  haocam_ui_qml_ARPanel_qml.cpp
+  haocam_ui_qml_FilterPanel_qml.cpp
+  haocam_ui_qml_RecordingPanel_qml.cpp
+  haocam_ui_qml_SettingsPanel_qml.cpp
+  qrc_haocam_raw_qml_0.cpp
+  qrc_haocam_raw_qml_0_extra_qmldirs.cpp
+  mocs_compilation_Release.cpp
+  haocam_tests.vcxproj -> D:\cam\haocam\build\windows\Release\haocam_tests.exe
+PS D:\cam\haocam> .\build\windows\Release\haocam.exe
+PS D:\cam\haocam> # ... biarkan freeze 30-60 detik, JANGAN ditutup, lalu:
+PS D:\cam\haocam> git log --oneline -1
+879cc44 (HEAD -> arena/01a0de8b-haocam, origin/arena/01a0de8b-haocam) Diagnostics for the remaining freeze: build stamp, ui-heartbeat, reconnect backoff
+PS D:\cam\haocam> Get-Content "$env:LOCALAPPDATA\HaoCam\logs\haocam.log" -Tail 60
 [2026-09-27 23:59:11.931] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
 [2026-09-27 23:59:11.931] [INFO ] [engine    ] attach-async: stage=engine-thread
 [2026-09-27 23:59:11.931] [INFO ] [engine    ] attach-async: stage=camera
@@ -29,4 +130,48 @@ PS D:\cam\haocam> Get-Content "$env:LOCALAPPDATA\HaoCam\logs\haocam.log" -Tail 3
 [2026-09-27 23:59:12.448] [INFO ] [camera    ] Reconnection attempt...
 [2026-09-27 23:59:12.448] [INFO ] [camera    ] Camera reconnected
 [2026-09-27 23:59:12.962] [INFO ] [camera    ] Reconnection attempt...
-
+[2026-09-28 00:38:10.371] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-28 00:38:10.372] [INFO ] [app       ] HaoCam 0.1.0 starting
+[2026-09-28 00:38:10.372] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-28 00:38:10.606] [INFO ] [app       ] Startup complete
+[2026-09-28 00:38:10.611] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:38:10.831] [INFO ] [engine    ] attach: render thread handed over the device
+[2026-09-28 00:38:10.831] [INFO ] [engine    ] attach-async: stage=pipeline-init
+[2026-09-28 00:38:10.855] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
+[2026-09-28 00:38:10.855] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 00:38:10.855] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 00:38:10.855] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
+[2026-09-28 00:38:10.855] [INFO ] [engine    ] attach-async: stage=engine-thread
+[2026-09-28 00:38:10.855] [INFO ] [engine    ] attach-async: stage=camera
+[2026-09-28 00:38:10.855] [INFO ] [engine    ] Engine thread started
+[2026-09-28 00:38:10.858] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:38:10.858] [INFO ] [camera    ] Starting camera '\\?\root#media#0002#{e5323777-f976-4f5b-9b55-b94699c46e44}\global' (preferred 1920x1080 @ 60 fps)
+[2026-09-28 00:38:10.858] [INFO ] [camera    ] Camera state Running
+[2026-09-28 00:38:10.858] [INFO ] [engine    ] Engine attached to Qt Quick D3D11 device
+[2026-09-28 00:38:10.861] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:38:10.890] [INFO ] [camera    ] Selected camera mode: 2560x1440 @ 60 fps (YUY2)
+[2026-09-28 00:38:10.977] [INFO ] [camera    ] Camera opened: 2560x1440 @ 60 fps (NV12)
+[2026-09-28 00:38:10.977] [INFO ] [camera    ] Camera state Running
+[2026-09-28 00:45:46.370] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-28 00:45:46.370] [INFO ] [app       ] HaoCam 0.1.0 starting
+[2026-09-28 00:45:46.370] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-28 00:45:46.607] [INFO ] [app       ] Startup complete
+[2026-09-28 00:45:46.610] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:45:46.825] [INFO ] [engine    ] attach: render thread handed over the device
+[2026-09-28 00:45:46.825] [INFO ] [engine    ] attach-async: stage=pipeline-init
+[2026-09-28 00:45:46.846] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
+[2026-09-28 00:45:46.846] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 00:45:46.846] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 00:45:46.847] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
+[2026-09-28 00:45:46.847] [INFO ] [engine    ] attach-async: stage=engine-thread
+[2026-09-28 00:45:46.847] [INFO ] [engine    ] attach-async: stage=camera
+[2026-09-28 00:45:46.847] [INFO ] [engine    ] Engine thread started
+[2026-09-28 00:45:46.849] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:45:46.850] [INFO ] [camera    ] Starting camera '\\?\root#media#0002#{e5323777-f976-4f5b-9b55-b94699c46e44}\global' (preferred 1920x1080 @ 60 fps)
+[2026-09-28 00:45:46.850] [INFO ] [camera    ] Camera state Running
+[2026-09-28 00:45:46.850] [INFO ] [engine    ] Engine attached to Qt Quick D3D11 device
+[2026-09-28 00:45:46.853] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:45:46.880] [INFO ] [camera    ] Selected camera mode: 2560x1440 @ 60 fps (YUY2)
+[2026-09-28 00:45:46.962] [INFO ] [camera    ] Camera opened: 2560x1440 @ 60 fps (NV12)
+[2026-09-28 00:45:46.962] [INFO ] [camera    ] Camera state Running
+PS D:\cam\haocam>
