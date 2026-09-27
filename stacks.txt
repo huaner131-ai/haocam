@@ -1,0 +1,92 @@
+Not Flagged		7080	0	Main Thread	Main Thread	Qt6Core.dll!00007ff855a453fe
+Not Flagged		19248	0	Worker Thread	ntdll.dll thread	ntdll.dll!00007ff94de05874
+Not Flagged		18240	0	Worker Thread	QQmlThread	win32u.dll!00007ff94b4cad04
+Not Flagged		18204	0	Worker Thread	QSGRenderThread	d3d11.dll!00007ff946b169ef
+Not Flagged		15236	0	Worker Thread	ntdll.dll thread	mfreadwrite.dll!00007ff8c33b70cb
+Not Flagged		19432	0	Worker Thread	ntdll.dll thread	d3d11.dll!00007ff946b16864
+Not Flagged		18128	0	Worker Thread	ntdll.dll thread	ntdll.dll!00007ff94de05874
+Not Flagged		19488	0	Worker Thread	haocam-watchdog	haocam.exe!00007ff71b9bfe8e
+Not Flagged		17476	0	Worker Thread	haocam-capture	mfplat.dll!00007ff9448cbe29
+Not Flagged		15196	0	Worker Thread	haocam-engine	haocam.exe!00007ff71b9dc3b4
+Not Flagged		14108	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935286667
+Not Flagged		17756	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		7408	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		14488	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		15644	0	Worker Thread	QThread	win32u.dll!00007ff94b4c5fe4
+Not Flagged		1752	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		6288	0	Worker Thread	ntdll.dll thread	ntdll.dll!00007ff94de05874
+Not Flagged		9244	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		18532	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		11528	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff934e581be
+Not Flagged		20416	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		19620	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		20168	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged	>	18208	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff93528aeaf
+Not Flagged		16200	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff934a12ac6
+Not Flagged		19596	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935227360
+Not Flagged		16892	0	Worker Thread	nvwgf2umx.dll thread	nvwgf2umx.dll!00007ff935202838
+Not Flagged		17752	0	Worker Thread	ntdll.dll thread	ntdll.dll!00007ff94de05874
+
+
+
+PS D:\cam\haocam> Get-Content "$env:LOCALAPPDATA\HaoCam\logs\haocam.log" -Tail 60
+[2026-09-28 00:38:10.855] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
+[2026-09-28 00:38:10.855] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 00:38:10.855] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 00:38:10.855] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
+[2026-09-28 00:38:10.855] [INFO ] [engine    ] attach-async: stage=engine-thread
+[2026-09-28 00:38:10.855] [INFO ] [engine    ] attach-async: stage=camera
+[2026-09-28 00:38:10.855] [INFO ] [engine    ] Engine thread started
+[2026-09-28 00:38:10.858] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:38:10.858] [INFO ] [camera    ] Starting camera '\\?\root#media#0002#{e5323777-f976-4f5b-9b55-b94699c46e44}\global' (preferred 1920x1080 @ 60 fps)
+[2026-09-28 00:38:10.858] [INFO ] [camera    ] Camera state Running
+[2026-09-28 00:38:10.858] [INFO ] [engine    ] Engine attached to Qt Quick D3D11 device
+[2026-09-28 00:38:10.861] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:38:10.890] [INFO ] [camera    ] Selected camera mode: 2560x1440 @ 60 fps (YUY2)
+[2026-09-28 00:38:10.977] [INFO ] [camera    ] Camera opened: 2560x1440 @ 60 fps (NV12)
+[2026-09-28 00:38:10.977] [INFO ] [camera    ] Camera state Running
+[2026-09-28 00:45:46.370] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-28 00:45:46.370] [INFO ] [app       ] HaoCam 0.1.0 starting
+[2026-09-28 00:45:46.370] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-28 00:45:46.607] [INFO ] [app       ] Startup complete
+[2026-09-28 00:45:46.610] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:45:46.825] [INFO ] [engine    ] attach: render thread handed over the device
+[2026-09-28 00:45:46.825] [INFO ] [engine    ] attach-async: stage=pipeline-init
+[2026-09-28 00:45:46.846] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
+[2026-09-28 00:45:46.846] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 00:45:46.846] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 00:45:46.847] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
+[2026-09-28 00:45:46.847] [INFO ] [engine    ] attach-async: stage=engine-thread
+[2026-09-28 00:45:46.847] [INFO ] [engine    ] attach-async: stage=camera
+[2026-09-28 00:45:46.847] [INFO ] [engine    ] Engine thread started
+[2026-09-28 00:45:46.849] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:45:46.850] [INFO ] [camera    ] Starting camera '\\?\root#media#0002#{e5323777-f976-4f5b-9b55-b94699c46e44}\global' (preferred 1920x1080 @ 60 fps)
+[2026-09-28 00:45:46.850] [INFO ] [camera    ] Camera state Running
+[2026-09-28 00:45:46.850] [INFO ] [engine    ] Engine attached to Qt Quick D3D11 device
+[2026-09-28 00:45:46.853] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 00:45:46.880] [INFO ] [camera    ] Selected camera mode: 2560x1440 @ 60 fps (YUY2)
+[2026-09-28 00:45:46.962] [INFO ] [camera    ] Camera opened: 2560x1440 @ 60 fps (NV12)
+[2026-09-28 00:45:46.962] [INFO ] [camera    ] Camera state Running
+[2026-09-28 01:08:46.752] [INFO ] [log       ] HaoCam logger initialized -> C:\Users\fourk\AppData\Local\HaoCam\logs\haocam.log
+[2026-09-28 01:08:46.753] [INFO ] [app       ] HaoCam 0.1.0 starting (build 879cc44)
+[2026-09-28 01:08:46.753] [INFO ] [config    ] No config.json (C:\Users\fourk\AppData\Local\HaoCam\config.json); optional SDK integrations disabled
+[2026-09-28 01:08:46.984] [INFO ] [app       ] Startup complete
+[2026-09-28 01:08:46.987] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 01:08:47.214] [INFO ] [preview   ] VideoView sync #1 (compositor=null latestFrame=0)
+[2026-09-28 01:08:47.214] [INFO ] [engine    ] attach: render thread handed over the device
+[2026-09-28 01:08:47.215] [INFO ] [engine    ] attach-async: stage=pipeline-init
+[2026-09-28 01:08:47.237] [INFO ] [gpu       ] GPU compositor initialized (2 passes, D3D11)
+[2026-09-28 01:08:47.237] [INFO ] [tracking  ] Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 01:08:47.237] [WARN ] [tracking  ] Tracker 'NullTracker' unavailable: Unavailable: no tracker backend in this build (place the MediaPipe SDK under sdk/mediapipe and enable HAOCAM_ENABLE_MEDIAPIPE)
+[2026-09-28 01:08:47.237] [INFO ] [effects   ] Effect pipeline initialized (tracking=0, beauty=0 / Unavailable: not configured (add credentials to config.json and set facebetter.enabled=true))
+[2026-09-28 01:08:47.237] [INFO ] [engine    ] attach-async: stage=engine-thread
+[2026-09-28 01:08:47.237] [INFO ] [engine    ] attach-async: stage=camera
+[2026-09-28 01:08:47.238] [INFO ] [engine    ] Engine thread started
+[2026-09-28 01:08:47.240] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 01:08:47.240] [INFO ] [camera    ] Starting camera '\\?\root#media#0002#{e5323777-f976-4f5b-9b55-b94699c46e44}\global' (preferred 1920x1080 @ 60 fps)
+[2026-09-28 01:08:47.240] [INFO ] [camera    ] Camera state Running
+[2026-09-28 01:08:47.240] [INFO ] [engine    ] Engine attached to Qt Quick D3D11 device
+[2026-09-28 01:08:47.243] [INFO ] [camera    ] Enumerated 4 camera device(s)
+[2026-09-28 01:08:47.270] [INFO ] [camera    ] Selected camera mode: 2560x1440 @ 60 fps (YUY2)
+[2026-09-28 01:08:47.351] [INFO ] [camera    ] Camera opened: 2560x1440 @ 60 fps (NV12)
+[2026-09-28 01:08:47.351] [INFO ] [camera    ] Camera state Running
