@@ -19,7 +19,7 @@ cmake --preset windows-base
 cmake --build --preset windows --config Release
 ```
 
-The executable lands in `build/windows/app/Release/haocam.exe` (QML modules
+The executable lands in `build/windows/Release/haocam.exe` (QML modules
 and resources are compiled in; no deploy step is required beyond the standard
 Qt runtime DLLs - run `windeployqt` if you plan to ship it).
 
