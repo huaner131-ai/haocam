@@ -231,12 +231,23 @@ std::vector<CameraDevice> MediaFoundationCapture::enumerateDevices() {
         if (SUCCEEDED(activates[i]->GetAllocatedString(
                 MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &symlink, &length))) {
             device.id = wideToUtf8(symlink);
+            // Physical webcams enumerate under usb#; software cameras
+            // (DroidCam, SplitCam, Snap virtual cam, ...) under root#/swd#.
+            std::string lower = device.id;
+            std::transform(lower.begin(), lower.end(), lower.begin(),
+                           [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            device.isVirtual = lower.find("usb#") == std::string::npos;
             CoTaskMemFree(symlink);
         }
         // Native modes are probed when the device opens (opening every camera
         // to list modes is slow and can wake privacy LEDs).
         activates[i]->Release();
-        if (!device.id.empty()) devices.push_back(std::move(device));
+        if (!device.id.empty()) {
+            HAOCAM_LOG_INFO(kCategory, "Device {}: '{}' ({})", devices.size() + 1,
+                            device.displayName.empty() ? device.id : device.displayName,
+                            device.isVirtual ? "virtual" : "physical");
+            devices.push_back(std::move(device));
+        }
     }
     CoTaskMemFree(activates);
     return devices;

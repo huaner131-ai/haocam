@@ -7,6 +7,7 @@ add_executable(haocam_tests
     core/test_FrameQueue.cpp
     core/test_FrameBufferPool.cpp
     core/test_CameraFormat.cpp
+    CameraDeviceTests.cpp
     core/test_AppSettings.cpp
     core/test_EventBus.cpp
     core/test_EffectGraph.cpp

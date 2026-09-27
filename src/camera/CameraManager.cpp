@@ -99,7 +99,15 @@ bool CameraManager::start(const std::string& deviceId) {
         }
 #endif
         source = m_source.get();
-        m_activeDeviceId = deviceId.empty() ? m_devices.front().id : deviceId;
+        if (deviceId.empty()) {
+            const CameraDevice* preferred = preferredCameraDevice(m_devices);
+            m_activeDeviceId = preferred ? preferred->id : m_devices.front().id;
+            if (preferred)
+                HAOCAM_LOG_INFO(kCategory, "Auto-selected camera '{}' ({})",
+                                preferred->displayName.empty() ? preferred->id
+                                                               : preferred->displayName,
+                                preferred->isVirtual ? "virtual" : "physical");
+        }
         CameraSourceCallbacks callbacks;
         callbacks.onFrameReady = [this](Frame&& frame) { onFrame(std::move(frame)); };
         callbacks.onStateChanged = [this](CameraState state, const std::string& detail) {
@@ -109,9 +117,19 @@ bool CameraManager::start(const std::string& deviceId) {
     }
 
     const CameraFormatPreference preference;
-    HAOCAM_LOG_INFO(kCategory, "Starting camera '{}' (preferred {}x{} @ {} fps)",
-                    m_activeDeviceId, preference.resolution.width,
-                    preference.resolution.height, preference.fps);
+    std::string chosenName = m_activeDeviceId;
+    bool chosenVirtual = false;
+    for (const auto& d : m_devices) {
+        if (d.id == m_activeDeviceId) {
+            if (!d.displayName.empty()) chosenName = d.displayName;
+            chosenVirtual = d.isVirtual;
+            break;
+        }
+    }
+    HAOCAM_LOG_INFO(kCategory, "Starting camera '{}' [{}] (preferred {}x{} @ {} fps)",
+                    chosenName, chosenVirtual ? "virtual" : "physical",
+                    preference.resolution.width, preference.resolution.height,
+                    preference.fps);
 
     m_running.store(true);
     if (!source->start(m_activeDeviceId, preference)) {
