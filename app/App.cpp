@@ -4,6 +4,7 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QSGRendererInterface>
+#include <QtQml>
 
 #include "core/logging/Logger.h"
 #include "core/settings/AppSettings.h"
@@ -13,6 +14,7 @@
 #include "ui/controllers/DiagnosticsController.h"
 #include "ui/controllers/EngineController.h"
 #include "ui/controllers/FilterController.h"
+#include "ui/controllers/VideoView.h"
 
 namespace haocam::app {
 
@@ -70,6 +72,11 @@ bool App::startup() {
     QObject::connect(
         &m_qmlEngine, &QQmlApplicationEngine::objectCreationFailed, &m_qmlEngine,
         [] { QCoreApplication::exit(2); }, Qt::QueuedConnection);
+
+    // VideoView is registered manually: Qt 6.11's qmltyperegistration does
+    // not emit the header include for absolutely-pathed sources (the other
+    // controllers use qmlRegisterSingletonInstance above).
+    qmlRegisterType<::haocam::app::VideoView>("HaoCam", 1, 0, "VideoView");
 
     m_qmlEngine.loadFromModule("HaoCam", "Main");
     m_qmlLoaded = !m_qmlEngine.rootObjects().isEmpty();

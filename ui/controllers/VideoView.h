@@ -27,7 +27,6 @@ class EngineController;
 
 class VideoView : public QQuickItem {
     Q_OBJECT
-    QML_NAMED_ELEMENT(VideoView)
 
 public:
     explicit VideoView(QQuickItem* parent = nullptr);
