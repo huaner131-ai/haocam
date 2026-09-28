@@ -43,6 +43,10 @@ struct ColorConstants {
 
 struct Compositor::Pipeline {
     std::shared_ptr<gfx::D3D11TexturePool> pool;
+    ID3D11RasterizerState* rasterizer =
+        nullptr; // CULL_NONE: the fullscreen triangle's winding must never be
+                 // culled (D3D11 default is CULL_BACK, which silently drew
+                 // NOTHING - first visible on real Windows hardware)
     gfx::D3D11SamplerCache samplers;
 
     gfx::D3D11ShaderProgram colorProgram;    // NV12 -> BGRA + adjustments + mirror
@@ -78,6 +82,20 @@ bool Compositor::initialize(ID3D11Device* device, ID3D11DeviceContext* context,
         return false;
     }
 
+    // Rasterizer: the fullscreen triangle covers the viewport regardless of
+    // winding; D3D11's default state (CULL_BACK) culled the whole triangle,
+    // so the passes wrote NOTHING while clear/timestamps looked healthy
+    // (diagnosed 2026-09-28 via staging readback probes on the user machine).
+    D3D11_RASTERIZER_DESC rsDesc{};
+    rsDesc.FillMode = D3D11_FILL_SOLID;
+    rsDesc.CullMode = D3D11_CULL_NONE;
+    rsDesc.FrontCounterClockwise = FALSE;
+    rsDesc.DepthClipEnable = TRUE;
+    if (FAILED(device->CreateRasterizerState(&rsDesc, &pipeline->rasterizer))) {
+        HAOCAM_LOG_ERROR(kCategory, "Compositor rasterizer state creation failed");
+        pipeline->rasterizer = nullptr;
+    }
+
     if (!pipeline->colorProgram.loadFromEmbeddedSource(
             device, shaders::k_fullscreen_vs_hlsl, shaders::k_fullscreen_vs_hlsl_size,
             shaders::k_color_ps_hlsl, shaders::k_color_ps_hlsl_size) ||
@@ -98,6 +116,10 @@ bool Compositor::initialize(ID3D11Device* device, ID3D11DeviceContext* context,
 GpuTextureRef Compositor::lastProcessedTexture() const { return m_lastProcessed; }
 
 void Compositor::shutdown() {
+    if (m_pipeline && m_pipeline->rasterizer) {
+        m_pipeline->rasterizer->Release();
+        m_pipeline->rasterizer = nullptr;
+    }
     m_pipeline.reset();
     {
         std::lock_guard<std::mutex> lock(m_outputMutex);
@@ -326,6 +348,7 @@ void Compositor::process(Frame& frame) {
         ID3D11Buffer* psCb = pipeline->colorProgram.pixelConstants();
         m_context->VSSetConstantBuffers(0, 1, &vsCb);
         m_context->PSSetConstantBuffers(0, 1, &psCb);
+        if (pipeline->rasterizer) m_context->RSSetState(pipeline->rasterizer);
         ID3D11ShaderResourceView* srvs[2] = {
             static_cast<ID3D11ShaderResourceView*>(srvY),
             static_cast<ID3D11ShaderResourceView*>(srvUV),
