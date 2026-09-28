@@ -107,6 +107,11 @@ bool CameraManager::start(const std::string& deviceId) {
                                 preferred->displayName.empty() ? preferred->id
                                                                : preferred->displayName,
                                 preferred->isVirtual ? "virtual" : "physical");
+        } else {
+            // REGRESSION FIX (introduced in dcd5181): an EXPLICIT deviceId used
+            // to skip assignment entirely, leaving m_activeDeviceId empty ->
+            // "No device id" on every explicit selection / persisted id.
+            m_activeDeviceId = deviceId;
         }
         CameraSourceCallbacks callbacks;
         callbacks.onFrameReady = [this](Frame&& frame) { onFrame(std::move(frame)); };
