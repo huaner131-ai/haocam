@@ -24,6 +24,7 @@
 namespace haocam::app {
 
 class EngineController;
+struct ID3D11Device;
 
 class VideoView : public QQuickItem {
     Q_OBJECT
@@ -50,7 +51,11 @@ private:
         void* native = nullptr;
         uint64_t frameId = 0;
         QSGTexture* texture = nullptr; // owns the wrapping QRhiTexture
+        void* keepalive = nullptr;     // ID3D11Texture2D* opened on the render
+                                       // device (cross-device import); Release
+                                       // via releaseImportKeepalive()
     };
+    void* m_renderDevice = nullptr; // ID3D11Device* of the Qt render thread
     std::unordered_map<void*, ImportedTexture> m_imports;
 };
 

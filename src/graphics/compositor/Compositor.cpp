@@ -58,7 +58,8 @@ Compositor::Compositor() = default;
 
 Compositor::~Compositor() { shutdown(); }
 
-bool Compositor::initialize(ID3D11Device* device, ID3D11DeviceContext* context) {
+bool Compositor::initialize(ID3D11Device* device, ID3D11DeviceContext* context,
+                            bool sharedResources) {
     if (!device || !context) return false;
     shutdown();
 
@@ -67,7 +68,7 @@ bool Compositor::initialize(ID3D11Device* device, ID3D11DeviceContext* context) 
     auto* pipeline = new Pipeline();
     m_pipeline.reset(pipeline);
 
-    pipeline->pool = gfx::D3D11TexturePool::create(device);
+    pipeline->pool = gfx::D3D11TexturePool::create(device, sharedResources);
     if (!pipeline->pool) {
         HAOCAM_LOG_ERROR(kCategory, "Compositor texture pool creation failed");
         m_device = nullptr;

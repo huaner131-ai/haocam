@@ -22,6 +22,10 @@ struct EffectContext {
     ID3D11Device* device = nullptr;
     ID3D11DeviceContext* context = nullptr;
     uint32_t deviceFlags = 0;
+    // True when the engine runs on its OWN device: the compositor then creates
+    // its output textures as D3D11 shared resources so the display device
+    // (Qt Quick render) can import them.
+    bool crossDeviceOutput = false;
 
     IFaceTracker* faceTracker = nullptr;
     ITexturePool* texturePool = nullptr;

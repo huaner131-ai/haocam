@@ -17,10 +17,21 @@
 #endif
 #include <windows.h>
 #include <d3d11.h>
+#include <dxgi.h>
+#include <wrl/client.h>
 #include "graphics/compositor/Compositor.h"
 #endif
 
 namespace haocam::app {
+
+#ifdef Q_OS_WIN
+// Cross-device imports stay alive while the QSGTexture wrapping them lives.
+inline void releaseImportKeepalive(void* keepalive) {
+    if (keepalive) static_cast<ID3D11Texture2D*>(keepalive)->Release();
+}
+#else
+inline void releaseImportKeepalive(void*) {}
+#endif
 
 namespace {
 constexpr const char* kCategory = "preview";
@@ -34,8 +45,10 @@ void VideoView::releaseResources() {
     // Called on the render thread: safe place to drop QSGTextures.
     for (auto& [native, import] : m_imports) {
         delete import.texture;
+        releaseImportKeepalive(import.keepalive);
     }
     m_imports.clear();
+    m_renderDevice = nullptr;
     m_attachAttempted = false; // allow re-attach if the item re-enters a window
 }
 
@@ -45,6 +58,7 @@ VideoView::~VideoView() {
     // is the last resort during teardown.
     for (auto& [native, import] : m_imports) {
         delete import.texture;
+        releaseImportKeepalive(import.keepalive);
     }
     m_imports.clear();
 }
@@ -89,6 +103,7 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
             rif->getResource(window(), QSGRendererInterface::DeviceResource));
         auto* context = static_cast<ID3D11DeviceContext*>(
             rif->getResource(window(), QSGRendererInterface::DeviceContextResource));
+        m_renderDevice = device;
         if (!device || !context) {
             emit previewFailed("Direct3D 11 device unavailable from Qt Quick");
             return node;
@@ -114,6 +129,46 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
             void* native = output.texture->native();
             auto it = m_imports.find(native);
             if (it == m_imports.end()) {
+                // The engine owns its own D3D11 device; its output textures are
+                // created with D3D11_RESOURCE_MISC_SHARED. Open the shared
+                // resource on the RENDER device and wrap that view into the
+                // QRhi texture. Fallback: wrap the native pointer directly
+                // (compositor running on the render device).
+                void* importNative = native;
+                void* keepalive = nullptr;
+                Microsoft::WRL::ComPtr<ID3D11Texture2D> engineTex(
+                    static_cast<ID3D11Texture2D*>(native));
+                Microsoft::WRL::ComPtr<IDXGIResource> dxgiResource;
+                HANDLE sharedHandle = nullptr;
+                static bool s_sharedPathLogged = false;
+                if (m_renderDevice && SUCCEEDED(engineTex.As(&dxgiResource)) &&
+                    SUCCEEDED(dxgiResource->GetSharedHandle(&sharedHandle)) &&
+                    sharedHandle) {
+                    Microsoft::WRL::ComPtr<ID3D11Texture2D> view;
+                    if (SUCCEEDED(static_cast<ID3D11Device*>(m_renderDevice)
+                                      ->OpenSharedResource(sharedHandle,
+                                                           __uuidof(ID3D11Texture2D),
+                                                           &view))) {
+                        importNative = view.Get();
+                        keepalive = view.Detach(); // released with the import
+                        if (!s_sharedPathLogged) {
+                            s_sharedPathLogged = true;
+                            HAOCAM_LOG_INFO(kCategory, "Importing engine frames via "
+                                                       "cross-device shared resource");
+                        }
+                    }
+                }
+                if (!keepalive) {
+                    // Producer texture lives on THIS device (pool keeps it
+                    // alive) - wrap it directly; our extra AddRef from the
+                    // ComPtr above is released at scope exit.
+                    if (!s_sharedPathLogged) {
+                        s_sharedPathLogged = true;
+                        HAOCAM_LOG_WARN(kCategory, "Shared-resource import unavailable; "
+                                                   "wrapping the texture directly");
+                    }
+                }
+
                 QRhi* rhi = static_cast<QRhi*>(window()->rendererInterface()->getResource(
                     window(), QSGRendererInterface::RhiResource));
                 if (rhi) {
@@ -126,9 +181,9 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
                     // Qt 6.9 changed NativeTexture::object from void* to a
                     // 64-bit integer handle.
-                    nativeDesc.object = reinterpret_cast<quint64>(native);
+                    nativeDesc.object = reinterpret_cast<quint64>(importNative);
 #else
-                    nativeDesc.object = native;
+                    nativeDesc.object = importNative;
 #endif
                     nativeDesc.layout = 0;
                     if (rhiTexture && rhiTexture->createFrom(nativeDesc)) {
@@ -137,11 +192,12 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
                             it = m_imports
                                      .emplace(native,
                                               ImportedTexture{native, output.frameId,
-                                                              qsgTexture})
+                                                              qsgTexture, keepalive})
                                      .first;
                         }
                     } else {
                         delete rhiTexture;
+                        releaseImportKeepalive(keepalive);
                     }
                 }
                 if (it == m_imports.end()) {

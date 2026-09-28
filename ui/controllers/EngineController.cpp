@@ -12,9 +12,8 @@
 
 #ifdef Q_OS_WIN
 #include "graphics/compositor/Compositor.h"
-#if defined(_WIN32)
-#include "graphics/D3D11/D3D11MultithreadCompat.h"
-#endif
+#include <d3d11.h>
+#include <wrl/client.h>
 #endif
 
 struct ID3D11Device;
@@ -74,24 +73,64 @@ bool EngineController::attachRenderDevice(void* d3d11Device, void* d3d11Context)
     // thread so the render thread returns immediately (the window can paint
     // while the engine warms up; observed a GUI freeze when this chain ran
     // synchronously on the render path).
-    const auto* device = d3d11Device;
+    const auto* device = d3d11Device; // kept for diagnostics/future use only
     const auto* context = d3d11Context;
     if (m_attachThread.joinable()) m_attachThread.join();
     m_attachThread = std::thread([this, device, context] {
         core::setThreadName("haocam-attach");
-        // The engine thread (camera uploads) and the QSG render thread share
-        // this device; serialize immediate-context access at the driver level.
-        // Media Foundation is deliberately NOT given this device anymore -
-        // see MediaFoundationCapture.cpp (driver-level deadlock).
-        if (gfx::enableDeviceMultithreadProtect(
-                const_cast<ID3D11Device*>(static_cast<const ID3D11Device*>(device)))) {
-            HAOCAM_LOG_INFO(kCategory, "Render device multithread protection enabled");
+        (void)device;
+        (void)context;
+
+        // ENGINE-OWNED DEVICE (2026-09-28): sharing the Qt render device with
+        // ANY second thread wedged the NVIDIA driver stack on the test machine
+        // (first Media Foundation, then our own engine-thread uploads - both
+        // deadlocked d3d11.dll with 0% CPU). The engine therefore runs on its
+        // own D3D11 device; the final frame crosses to the render device as a
+        // D3D11 shared resource (see VideoView import).
+        Microsoft::WRL::ComPtr<ID3D11Device> engineDevice;
+        Microsoft::WRL::ComPtr<ID3D11DeviceContext> engineContext;
+        const D3D_FEATURE_LEVEL levels[] = {
+            D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
+            D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
+        };
+        HRESULT hr = D3D11CreateDevice(
+            nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
+            D3D11_CREATE_DEVICE_BGRA_SUPPORT, levels, ARRAYSIZE(levels),
+            D3D11_SDK_VERSION, engineDevice.GetAddressOf(), nullptr,
+            engineContext.GetAddressOf());
+        if (FAILED(hr)) {
+            hr = D3D11CreateDevice(
+                nullptr, D3D_DRIVER_TYPE_WARP, nullptr,
+                D3D11_CREATE_DEVICE_BGRA_SUPPORT, levels, ARRAYSIZE(levels),
+                D3D11_SDK_VERSION, engineDevice.GetAddressOf(), nullptr,
+                engineContext.GetAddressOf());
+            if (SUCCEEDED(hr)) {
+                HAOCAM_LOG_WARN(kCategory, "Engine GPU running on WARP software device");
+            }
         }
+        if (FAILED(hr)) {
+            m_started = false;
+            QMetaObject::invokeMethod(
+                this,
+                [this] { emit engineFailed("Engine D3D11 device creation failed"); },
+                Qt::QueuedConnection);
+            return;
+        }
+
+        // Process-lifetime keepalives: EffectContext carries raw pointers and
+        // the pipeline uses them until shutdown.
+        static Microsoft::WRL::ComPtr<ID3D11Device> s_deviceKeepalive;
+        static Microsoft::WRL::ComPtr<ID3D11DeviceContext> s_contextKeepalive;
+        s_deviceKeepalive = engineDevice;
+        s_contextKeepalive = engineContext;
+
+        HAOCAM_LOG_INFO(kCategory,
+                        "Engine owns its own D3D11 device; output shared to Qt "
+                        "via D3D11 shared resources");
         EffectContext attachContext;
-        attachContext.device = const_cast<ID3D11Device*>(
-            static_cast<const ID3D11Device*>(device));
-        attachContext.context = const_cast<ID3D11DeviceContext*>(
-            static_cast<const ID3D11DeviceContext*>(context));
+        attachContext.device = engineDevice.Get();
+        attachContext.context = engineContext.Get();
+        attachContext.crossDeviceOutput = true;
 
         HAOCAM_LOG_INFO(kCategory, "attach-async: stage=pipeline-init");
         if (!m_effects->initialize(attachContext)) {

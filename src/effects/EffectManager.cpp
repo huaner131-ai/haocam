@@ -92,7 +92,8 @@ bool EffectManager::initialize(const EffectContext& context) {
     // ---- GPU compositor (Windows) ----
 #ifdef _WIN32
     m_compositor = std::make_unique<Compositor>();
-    if (!m_compositor->initialize(context.device, context.context)) {
+    if (!m_compositor->initialize(context.device, context.context,
+                                  context.crossDeviceOutput)) {
         HAOCAM_LOG_ERROR(kCategory, "GPU compositor failed to initialize; preview disabled");
         m_compositor.reset();
     }

@@ -69,15 +69,19 @@ bool D3D11TextureFactory::createViews(GpuTextureStorage& storage) {
     return true;
 }
 
-std::shared_ptr<D3D11TexturePool> D3D11TexturePool::create(ID3D11Device* device) {
-    return std::shared_ptr<D3D11TexturePool>(new D3D11TexturePool(device));
+std::shared_ptr<D3D11TexturePool> D3D11TexturePool::create(ID3D11Device* device,
+                                                           bool sharedResources) {
+    return std::shared_ptr<D3D11TexturePool>(
+        new D3D11TexturePool(device, sharedResources));
 }
 
-D3D11TexturePool::D3D11TexturePool(ID3D11Device* device) : m_device(device) {}
+D3D11TexturePool::D3D11TexturePool(ID3D11Device* device, bool sharedResources)
+    : m_device(device), m_sharedResources(sharedResources) {}
 
 std::shared_ptr<ID3D11Texture2D> D3D11TexturePool::createTexture(uint32_t width, uint32_t height,
                                                                  PixelFormat format,
-                                                                 uint8_t bindFlags) {
+                                                                 uint8_t bindFlags,
+                                                                 bool shared) const {
     D3D11_TEXTURE2D_DESC desc{};
     desc.Width = width;
     desc.Height = height;
@@ -92,6 +96,8 @@ std::shared_ptr<ID3D11Texture2D> D3D11TexturePool::createTexture(uint32_t width,
     if (hasBind(bindFlags, TextureBind::RenderTarget)) {
         desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
     }
+
+    if (shared) desc.MiscFlags |= D3D11_RESOURCE_MISC_SHARED;
 
     ComPtr<ID3D11Texture2D> texture;
     if (FAILED(m_device->CreateTexture2D(&desc, nullptr, texture.GetAddressOf()))) {
@@ -123,7 +129,7 @@ GpuTextureRef D3D11TexturePool::acquire(uint32_t width, uint32_t height, PixelFo
     entry.height = height;
     entry.format = format;
     entry.bindFlags = bindFlags;
-    entry.texture = createTexture(width, height, format, bindFlags);
+    entry.texture = createTexture(width, height, format, bindFlags, m_sharedResources);
     if (!entry.texture) return nullptr;
     entry.inUse = true;
     m_entries.push_back(std::move(entry));

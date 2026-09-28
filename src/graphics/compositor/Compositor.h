@@ -46,7 +46,10 @@ public:
     Compositor();  // out-of-line: Pipeline is incomplete in this header
     ~Compositor();
 
-    bool initialize(ID3D11Device* device, ID3D11DeviceContext* context);
+    // sharedResources: create pooled textures as D3D11 shared resources so a
+    // second device (Qt render) can display them (engine-owned device mode).
+    bool initialize(ID3D11Device* device, ID3D11DeviceContext* context,
+                    bool sharedResources = false);
     void shutdown();
     bool valid() const { return m_device != nullptr; }
 

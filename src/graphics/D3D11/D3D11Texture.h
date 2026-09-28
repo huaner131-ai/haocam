@@ -45,7 +45,11 @@ private:
 class D3D11TexturePool final : public ITexturePool,
                                public std::enable_shared_from_this<D3D11TexturePool> {
 public:
-    static std::shared_ptr<D3D11TexturePool> create(ID3D11Device* device);
+    // sharedResources: textures are created with D3D11_RESOURCE_MISC_SHARED so
+    // a SECOND device (e.g. the Qt render device) can import them via
+    // OpenSharedResource. Used when the engine owns its own D3D11 device.
+    static std::shared_ptr<D3D11TexturePool> create(ID3D11Device* device,
+                                                    bool sharedResources = false);
 
     GpuTextureRef acquire(uint32_t width, uint32_t height, PixelFormat format,
                           uint8_t bindFlags) override;
@@ -53,7 +57,7 @@ public:
     size_t pooledCount() const override;
 
 private:
-    explicit D3D11TexturePool(ID3D11Device* device);
+    explicit D3D11TexturePool(ID3D11Device* device, bool sharedResources = false);
 
     struct Entry {
         uint32_t width = 0;
@@ -65,10 +69,12 @@ private:
     };
 
     std::shared_ptr<ID3D11Texture2D> createTexture(uint32_t width, uint32_t height,
-                                                   PixelFormat format, uint8_t bindFlags);
+                                                   PixelFormat format, uint8_t bindFlags,
+                                                   bool shared = false) const;
     GpuTextureRef wrapEntry(std::deque<Entry>::iterator entryIt);
 
     ID3D11Device* m_device = nullptr;
+    bool m_sharedResources = false;
     mutable std::mutex m_mutex;
     std::deque<Entry> m_entries; // deque: stable references for append-only growth
     std::atomic<size_t> m_inFlight{0};
