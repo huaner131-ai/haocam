@@ -59,6 +59,7 @@ Rectangle {
                 spacing: 8
                 Repeater {
                     model: [
+                        { "label": "Auto",    "w": 0,    "h": 0,    "fps": 0 },
                         { "label": "720p60",  "w": 1280, "h": 720,  "fps": 60 },
                         { "label": "1080p30", "w": 1920, "h": 1080, "fps": 30 },
                         { "label": "1080p60", "w": 1920, "h": 1080, "fps": 60 },

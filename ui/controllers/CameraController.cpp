@@ -74,6 +74,24 @@ void CameraController::selectDevice(const QString& deviceId) {
 }
 
 void CameraController::applyResolution(int width, int height, int fps) {
+    const std::string deviceId = m_selectedDeviceId.toStdString();
+
+    // "Auto": back to the device's native best mode.
+    if (width == 0 || height == 0) {
+        m_hasActiveFormatRequest = false;
+        m_requestedWidth = 0;
+        m_requestedHeight = 0;
+        m_requestedFps = 0;
+        if (!m_engine.cameraManager().clearFormat()) {
+            HAOCAM_LOG_WARN(kCategory, "Camera rejected the auto-format request");
+            return;
+        }
+        m_engine.cameraManager().stop();
+        m_engine.cameraManager().start(deviceId);
+        emit activeFormatChanged();
+        return;
+    }
+
     m_hasActiveFormatRequest = true;
     m_requestedWidth = width;
     m_requestedHeight = height;
@@ -87,9 +105,18 @@ void CameraController::applyResolution(int width, int height, int fps) {
         HAOCAM_LOG_WARN(kCategory, "Camera rejected format request");
         return;
     }
+    // FLICKER FIX: re-selecting the ALREADY ACTIVE mode used to restart the
+    // capture for nothing (~0.5s of flicker). Skip the restart when the
+    // device already streams exactly this mode.
+    const CameraFormatDesc active = m_engine.cameraManager().activeFormat();
+    if (active.resolution == format.resolution && active.fps() == format.fps()) {
+        HAOCAM_LOG_INFO(kCategory, "Resolution {}x{}@{} already active - no restart",
+                        width, height, fps);
+        emit activeFormatChanged();
+        return;
+    }
     // Mode changes apply on capture restart (the reliable path for UVC
     // devices); the source remembers the requested mode.
-    const std::string deviceId = m_selectedDeviceId.toStdString();
     m_engine.cameraManager().stop();
     m_engine.cameraManager().start(deviceId);
     emit activeFormatChanged();

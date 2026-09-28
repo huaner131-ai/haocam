@@ -43,6 +43,7 @@ public:
 
     // Applies a different mode without reopening the device when possible.
     virtual bool setFormat(const CameraFormatDesc& format) = 0;
+    virtual bool clearFormat() { return false; } // unsupported by default
 
     // Optional hardware controls; report false when unsupported.
     virtual bool setMirrorPreview(bool mirror) = 0;

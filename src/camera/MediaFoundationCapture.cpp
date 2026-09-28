@@ -285,6 +285,12 @@ void MediaFoundationCapture::stop() {
     m_state = CameraState::Idle;
 }
 
+bool MediaFoundationCapture::clearFormat() {
+    m_hasRequestedFormat = false;
+    HAOCAM_LOG_INFO(kCategory, "Format request cleared; next start uses auto mode");
+    return true;
+}
+
 bool MediaFoundationCapture::setFormat(const CameraFormatDesc& format) {
     m_requestedFormat = format;
     m_hasRequestedFormat = true;

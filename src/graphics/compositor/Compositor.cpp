@@ -327,9 +327,8 @@ void Compositor::process(Frame& frame) {
     if (!processed) return;
     auto* processedViews = static_cast<gfx::D3D11TextureViews*>(processed->userData());
 
+    const MirrorConstants mirror{frame.metadata.mirrored ? 1.0f : 0.0f, 0.0f, {0.0f, 0.0f}};
     {
-        MirrorConstants mirror;
-        mirror.mirrorX = frame.metadata.mirrored ? 1.0f : 0.0f;
         pipeline->colorProgram.setVertexConstants(m_context, &mirror, sizeof(mirror));
 
         ColorConstants color;
@@ -396,6 +395,16 @@ void Compositor::process(Frame& frame) {
         ID3D11ShaderResourceView* srv = processedViews->srvPlane0;
         m_context->PSSetShaderResources(0, 1, &srv);
         m_context->PSSetSamplers(0, 1, &sampler);
+        // Bind this program's OWN VS constants. D3D11 context state is sticky:
+        // without this, pass 2 kept pass 1's constant buffer (mirrorX=1) and
+        // mirrored a SECOND time - the double flip cancelled the mirror
+        // entirely ("mirror toggle does nothing", user machine 2026-09-28).
+        // Pass 1 has already mirrored the source, so pass 2 copies straight.
+        static constexpr MirrorConstants kNoMirror{0.0f, 0.0f, {0.0f, 0.0f}};
+        pipeline->compositeProgram.setVertexConstants(m_context, &kNoMirror,
+                                                      sizeof(kNoMirror));
+        ID3D11Buffer* compositeVsCb = pipeline->compositeProgram.vertexConstants();
+        m_context->VSSetConstantBuffers(0, 1, &compositeVsCb);
         m_context->VSSetShader(pipeline->compositeProgram.vertexShader(), nullptr, 0);
         m_context->PSSetShader(pipeline->compositeProgram.pixelShader(), nullptr, 0);
         m_context->Draw(3, 0);

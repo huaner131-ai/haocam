@@ -40,6 +40,7 @@ public:
     bool start(const std::string& deviceId = {});
     void stop();
 
+    bool clearFormat();
     bool selectFormat(const CameraFormatDesc& format);
     void setMirror(bool mirror);
 

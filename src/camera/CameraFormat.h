@@ -37,8 +37,13 @@ struct CameraFormatDesc {
 };
 
 struct CameraFormatPreference {
-    Resolution resolution{1920, 1080};
-    double fps = 60.0;
+    // resolution == {0,0} means AUTO: pick the device's best native mode
+    // (highest area, decent fps, NV12 preferred) - the user-requested
+    // "auto detect from the camera hardware default" behavior.
+    Resolution resolution{0, 0};
+    double fps = 0.0;
+
+    bool isAuto() const { return resolution.width == 0 || resolution.height == 0; }
 };
 
 // Scores formats and returns the best candidate (or nullptr for an empty

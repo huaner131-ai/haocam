@@ -34,6 +34,15 @@ double scoreFormat(const CameraFormatDesc& f, const CameraFormatPreference& p) {
     const double fps = f.fps();
     double score = 0.0;
 
+    if (p.isAuto()) {
+        // Native-best: log-scaled area dominates, then usable fps, then NV12.
+        const double area = static_cast<double>(f.resolution.area());
+        score += std::log2(area > 0 ? area : 1.0) * 80.0;
+        score += std::min(fps, 60.0) * 3.0;
+        if (f.pixelFormat == "NV12") score += 60.0;
+        return score;
+    }
+
     if (f.resolution == p.resolution) {
         score += 1000.0;
         const double fpsGap = std::abs(fps - p.fps);

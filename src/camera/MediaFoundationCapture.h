@@ -41,6 +41,7 @@ public:
     bool start(const std::string& deviceId, const CameraFormatPreference& preference) override;
     void stop() override;
     bool setFormat(const CameraFormatDesc& format) override; // applied on next (re)start
+    bool clearFormat() override;
 
     bool setMirrorPreview(bool mirror) override { m_mirror = mirror; return true; }
     bool setExposure(double value) override;

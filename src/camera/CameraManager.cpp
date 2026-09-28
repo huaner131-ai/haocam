@@ -131,10 +131,15 @@ bool CameraManager::start(const std::string& deviceId) {
             break;
         }
     }
-    HAOCAM_LOG_INFO(kCategory, "Starting camera '{}' [{}] (preferred {}x{} @ {} fps)",
-                    chosenName, chosenVirtual ? "virtual" : "physical",
-                    preference.resolution.width, preference.resolution.height,
-                    preference.fps);
+    if (preference.isAuto()) {
+        HAOCAM_LOG_INFO(kCategory, "Starting camera '{}' [{}] (mode auto: device native best)",
+                        chosenName, chosenVirtual ? "virtual" : "physical");
+    } else {
+        HAOCAM_LOG_INFO(kCategory, "Starting camera '{}' [{}] (preferred {}x{} @ {} fps)",
+                        chosenName, chosenVirtual ? "virtual" : "physical",
+                        preference.resolution.width, preference.resolution.height,
+                        preference.fps);
+    }
 
     m_running.store(true);
     if (!source->start(m_activeDeviceId, preference)) {
@@ -234,6 +239,17 @@ void CameraManager::stop() {
         watchdog->join();
     }
     HAOCAM_LOG_INFO(kCategory, "Camera stopped");
+}
+
+bool CameraManager::clearFormat() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_source) return false;
+    const bool ok = m_source->clearFormat();
+    if (ok) {
+        m_activeFormat = m_source->activeFormat();
+        HAOCAM_LOG_INFO(kCategory, "Format request cleared (back to auto)");
+    }
+    return ok;
 }
 
 bool CameraManager::selectFormat(const CameraFormatDesc& format) {
