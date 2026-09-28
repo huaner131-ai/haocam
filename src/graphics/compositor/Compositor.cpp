@@ -117,6 +117,61 @@ size_t Compositor::pooledTextures() const {
     return m_pipeline ? m_pipeline->pool->pooledCount() : 0;
 }
 
+namespace {
+
+// Diagnostic one-shot: read back 4 bytes at the image center (staging copy +
+// Map). Used only by the output probes - never on the steady-state path.
+void probeCenterPixels(ID3D11Device* device, ID3D11DeviceContext* context,
+                       ID3D11Texture2D* texture, const char* name, uint32_t probeNo) {
+    D3D11_TEXTURE2D_DESC desc{};
+    texture->GetDesc(&desc);
+    D3D11_TEXTURE2D_DESC stagingDesc = desc;
+    stagingDesc.Usage = D3D11_USAGE_STAGING;
+    stagingDesc.BindFlags = 0;
+    stagingDesc.MiscFlags = 0;
+    stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    stagingDesc.MipLevels = 1;
+    stagingDesc.ArraySize = 1;
+    stagingDesc.SampleDesc.Count = 1;
+    ID3D11Texture2D* staging = nullptr;
+    if (FAILED(device->CreateTexture2D(&stagingDesc, nullptr, &staging)) || !staging) {
+        HAOCAM_LOG_WARN(kCategory, "{} probe #{}: staging create failed", name, probeNo);
+        return;
+    }
+    context->CopyResource(staging, texture);
+    D3D11_MAPPED_SUBRESOURCE mapped{};
+    if (SUCCEEDED(context->Map(staging, 0, D3D11_MAP_READ, 0, &mapped))) {
+        const auto* base = static_cast<const uint8_t*>(mapped.pData);
+        const uint32_t cx = desc.Width / 2, cy = desc.Height / 2;
+        const uint8_t* center = base + cy * mapped.RowPitch + cx * 4;
+        const uint8_t* corner = base + 2 * mapped.RowPitch + 8;
+        HAOCAM_LOG_INFO(kCategory,
+                        "{} probe #{}: center=({},{},{},{}) corner=({},{},{},{}) "
+                        "fmt={} rowPitch={}",
+                        name, probeNo, static_cast<unsigned>(center[0]),
+                        static_cast<unsigned>(center[1]),
+                        static_cast<unsigned>(center[2]),
+                        static_cast<unsigned>(center[3]),
+                        static_cast<unsigned>(corner[0]),
+                        static_cast<unsigned>(corner[1]),
+                        static_cast<unsigned>(corner[2]),
+                        static_cast<unsigned>(corner[3]),
+                        static_cast<unsigned>(desc.Format),
+                        static_cast<unsigned>(mapped.RowPitch));
+        context->Unmap(staging, 0);
+    } else {
+        HAOCAM_LOG_WARN(kCategory, "{} probe #{}: Map failed", name, probeNo);
+    }
+    staging->Release();
+}
+
+bool probeEnabled(std::atomic<uint32_t>& seq) {
+    const uint32_t probeNo = seq.fetch_add(1);
+    return (probeNo == 0 || (probeNo % 300) == 0);
+}
+
+} // namespace
+
 void Compositor::process(Frame& frame) {
     if (!m_pipeline || !frame.isValid()) return;
     auto* pipeline = m_pipeline.get();
@@ -189,6 +244,44 @@ void Compositor::process(Frame& frame) {
         auto* texture = static_cast<ID3D11Texture2D*>(uploadTexture->native());
         m_context->UpdateSubresource(texture, 0, nullptr, frame.cpuBuffer->data.data(),
                                      frame.cpuBuffer->strideY, height * 3 / 2);
+        {
+            static std::atomic<uint32_t> s_nv12ProbeSeq{0};
+            if (probeEnabled(s_nv12ProbeSeq)) {
+                HAOCAM_LOG_INFO(kCategory,
+                                "NV12 upload: cpuBufferSize={} strideY={} (must be >= {})",
+                                frame.cpuBuffer->data.size(), frame.cpuBuffer->strideY,
+                                width);
+                D3D11_TEXTURE2D_DESC nv12Desc{};
+                texture->GetDesc(&nv12Desc);
+                nv12Desc.Usage = D3D11_USAGE_STAGING;
+                nv12Desc.BindFlags = 0;
+                nv12Desc.MiscFlags = 0;
+                nv12Desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+                ID3D11Texture2D* staging = nullptr;
+                if (SUCCEEDED(m_device->CreateTexture2D(&nv12Desc, nullptr, &staging)) &&
+                    staging) {
+                    m_context->CopyResource(staging, texture);
+                    D3D11_MAPPED_SUBRESOURCE mapped{};
+                    if (SUCCEEDED(m_context->Map(staging, 0, D3D11_MAP_READ, 0, &mapped))) {
+                        const auto* base = static_cast<const uint8_t*>(mapped.pData);
+                        const uint8_t* yCenter =
+                            base + (height / 2) * mapped.RowPitch + (width / 2);
+                        const uint8_t* uvCenter =
+                            base + (height + height / 4) * mapped.RowPitch +
+                            (width / 2) / 2 * 2;
+                        HAOCAM_LOG_INFO(kCategory,
+                                        "NV12 probe: Y@center={} UV@center=({},{}) "
+                                        "rowPitch={}",
+                                        static_cast<unsigned>(yCenter[0]),
+                                        static_cast<unsigned>(uvCenter[0]),
+                                        static_cast<unsigned>(uvCenter[1]),
+                                        static_cast<unsigned>(mapped.RowPitch));
+                        m_context->Unmap(staging, 0);
+                    }
+                    staging->Release();
+                }
+            }
+        }
 
         gfx::D3D11TextureFactory factory(m_device);
         if (!uploadTexture->userData()) {
@@ -245,6 +338,15 @@ void Compositor::process(Frame& frame) {
         m_context->Draw(3, 0);
     }
 
+    {
+        static std::atomic<uint32_t> s_processedProbeSeq{0};
+        if (probeEnabled(s_processedProbeSeq)) {
+            probeCenterPixels(m_device, m_context,
+                              static_cast<ID3D11Texture2D*>(processed->native()),
+                              "Processed", 0);
+        }
+    }
+
     // ---- Pass 2: composite into the final ring texture ----
     // Beauty override (when EffectManager supplied a fresh beauty output,
     // the composite samples it instead of the un-beautified processed frame).
@@ -286,47 +388,13 @@ void Compositor::process(Frame& frame) {
     m_context->Flush(); // submit now so consumers on other threads see the frame
 
     // ---- One-shot content probe (diagnostic, engine-side readback) ----
-    // Decisive split: if the final texture holds real pixels, the content
-    // pipeline is fine and the DISPLAY path (Qt import) is at fault; if these
-    // bytes are black, the compositor itself produces black. Runs on frame 1
-    // and every 300th frame only - never per frame.
+    // Frame 1 and every 300th frame only - never per frame.
     {
         static std::atomic<uint32_t> s_probeSeq{0};
-        const uint32_t probeNo = s_probeSeq.fetch_add(1);
-        if (probeNo == 0 || (probeNo % 300) == 0) {
-            auto* finalTex = static_cast<ID3D11Texture2D*>(finalTexture->native());
-            D3D11_TEXTURE2D_DESC probeDesc{};
-            finalTex->GetDesc(&probeDesc);
-            probeDesc.Usage = D3D11_USAGE_STAGING;
-            probeDesc.BindFlags = 0;
-            probeDesc.MiscFlags = 0;
-            probeDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-            ID3D11Texture2D* staging = nullptr;
-            if (SUCCEEDED(m_device->CreateTexture2D(&probeDesc, nullptr, &staging)) && staging) {
-                m_context->CopyResource(staging, finalTex);
-                D3D11_MAPPED_SUBRESOURCE mapped{};
-                if (SUCCEEDED(m_context->Map(staging, 0, D3D11_MAP_READ, 0, &mapped))) {
-                    const auto* base = static_cast<const uint8_t*>(mapped.pData);
-                    const uint32_t cx = probeDesc.Width / 2, cy = probeDesc.Height / 2;
-                    const uint8_t* center = base + cy * mapped.RowPitch + cx * 4;
-                    const uint8_t* corner = base + 2 * mapped.RowPitch + 8;
-                    HAOCAM_LOG_INFO(kCategory,
-                                    "Output probe #{}: center BGRA=({},{},{},{}) "
-                                    "corner BGRA=({},{},{},{}) dxgiFmt={}",
-                                    probeNo, center[0], center[1], center[2], center[3],
-                                    corner[0], corner[1], corner[2], corner[3],
-                                    static_cast<unsigned>(probeDesc.Format));
-                    m_context->Unmap(staging, 0);
-                } else {
-                    HAOCAM_LOG_WARN(kCategory, "Output probe #{}: staging Map failed",
-                                    probeNo);
-                }
-                staging->Release();
-            } else {
-                HAOCAM_LOG_WARN(kCategory,
-                                "Output probe #{}: staging texture creation failed",
-                                probeNo);
-            }
+        if (probeEnabled(s_probeSeq)) {
+            probeCenterPixels(m_device, m_context,
+                              static_cast<ID3D11Texture2D*>(finalTexture->native()),
+                              "Final", 0);
         }
     }
 
