@@ -13,6 +13,7 @@
 #ifdef Q_OS_WIN
 #include "graphics/compositor/Compositor.h"
 #include <d3d11.h>
+#include <dxgi.h>
 #include <wrl/client.h>
 #endif
 
@@ -73,12 +74,11 @@ bool EngineController::attachRenderDevice(void* d3d11Device, void* d3d11Context)
     // thread so the render thread returns immediately (the window can paint
     // while the engine warms up; observed a GUI freeze when this chain ran
     // synchronously on the render path).
-    const auto* device = d3d11Device; // kept for diagnostics/future use only
+    const auto* device = d3d11Device; // used to pin the engine to Qt's adapter
     const auto* context = d3d11Context;
     if (m_attachThread.joinable()) m_attachThread.join();
     m_attachThread = std::thread([this, device, context] {
         core::setThreadName("haocam-attach");
-        (void)device;
         (void)context;
 
         // ENGINE-OWNED DEVICE (2026-09-28): sharing the Qt render device with
@@ -87,17 +87,44 @@ bool EngineController::attachRenderDevice(void* d3d11Device, void* d3d11Context)
         // deadlocked d3d11.dll with 0% CPU). The engine therefore runs on its
         // own D3D11 device; the final frame crosses to the render device as a
         // D3D11 shared resource (see VideoView import).
+        // The engine device is created on the RENDER device's DXGI adapter:
+        // plain MISC_SHARED textures cannot cross adapters (e.g. Qt on the
+        // iGPU while the engine landed on the dGPU -> OpenSharedResource
+        // would fail and the preview would stay black).
+        Microsoft::WRL::ComPtr<IDXGIAdapter> renderAdapter;
+        if (device) {
+            Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
+            if (SUCCEEDED(static_cast<ID3D11Device*>(const_cast<void*>(device))
+                              ->QueryInterface(IID_PPV_ARGS(&dxgiDevice)))) {
+                dxgiDevice->GetAdapter(&renderAdapter);
+            }
+        }
         Microsoft::WRL::ComPtr<ID3D11Device> engineDevice;
         Microsoft::WRL::ComPtr<ID3D11DeviceContext> engineContext;
         const D3D_FEATURE_LEVEL levels[] = {
             D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0,
             D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0,
         };
-        HRESULT hr = D3D11CreateDevice(
-            nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
-            D3D11_CREATE_DEVICE_BGRA_SUPPORT, levels, ARRAYSIZE(levels),
-            D3D11_SDK_VERSION, engineDevice.GetAddressOf(), nullptr,
-            engineContext.GetAddressOf());
+        HRESULT hr = E_FAIL;
+        if (renderAdapter) {
+            hr = D3D11CreateDevice(
+                renderAdapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr,
+                D3D11_CREATE_DEVICE_BGRA_SUPPORT, levels, ARRAYSIZE(levels),
+                D3D11_SDK_VERSION, engineDevice.GetAddressOf(), nullptr,
+                engineContext.GetAddressOf());
+            if (SUCCEEDED(hr)) {
+                HAOCAM_LOG_INFO(kCategory,
+                                "Engine device created on the render device's DXGI "
+                                "adapter (same-adapter sharing)");
+            }
+        }
+        if (FAILED(hr)) {
+            hr = D3D11CreateDevice(
+                nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
+                D3D11_CREATE_DEVICE_BGRA_SUPPORT, levels, ARRAYSIZE(levels),
+                D3D11_SDK_VERSION, engineDevice.GetAddressOf(), nullptr,
+                engineContext.GetAddressOf());
+        }
         if (FAILED(hr)) {
             hr = D3D11CreateDevice(
                 nullptr, D3D_DRIVER_TYPE_WARP, nullptr,

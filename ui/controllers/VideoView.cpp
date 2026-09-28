@@ -116,6 +116,12 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
 
     auto* compositor = EngineController::sharedCompositor();
     if (!compositor || !compositor->valid()) {
+        static bool s_noCompLogged = false;
+        if (!s_noCompLogged) {
+            s_noCompLogged = true;
+            HAOCAM_LOG_WARN(kCategory, "No valid compositor yet; preview idle");
+        }
+        update(); // keep the render loop alive - the compositor may appear later
         return node;
     }
 
@@ -124,7 +130,9 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
     if (latest != m_displayedFrameId && latest != 0) {
         const CompositorOutput output = compositor->latestOutput();
         if (output.texture && output.texture->native()) {
-            m_displayedFrameId = output.frameId;
+            // NOTE: m_displayedFrameId is committed only AFTER a successful
+            // import - otherwise a failed import would never be retried and
+            // the preview would stay black forever (observed 2026-09-28).
 
             void* native = output.texture->native();
             auto it = m_imports.find(native);
@@ -141,6 +149,8 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
                 Microsoft::WRL::ComPtr<IDXGIResource> dxgiResource;
                 HANDLE sharedHandle = nullptr;
                 static bool s_sharedPathLogged = false;
+                static bool s_failHandle = false;
+                static bool s_failOpen = false;
                 if (m_renderDevice && SUCCEEDED(engineTex.As(&dxgiResource)) &&
                     SUCCEEDED(dxgiResource->GetSharedHandle(&sharedHandle)) &&
                     sharedHandle) {
@@ -156,7 +166,17 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
                             HAOCAM_LOG_INFO(kCategory, "Importing engine frames via "
                                                        "cross-device shared resource");
                         }
+                    } else if (!s_failOpen) {
+                        s_failOpen = true;
+                        HAOCAM_LOG_ERROR(kCategory, "Import step FAILED: "
+                                       "OpenSharedResource on the render device "
+                                       "(different DXGI adapter than the engine?)");
                     }
+                } else if (!s_failHandle) {
+                    s_failHandle = true;
+                    HAOCAM_LOG_ERROR(kCategory, "Import step FAILED: no shared handle "
+                                   "(renderDevice={} - texture not MISC_SHARED?)",
+                                    m_renderDevice != nullptr);
                 }
                 if (!keepalive) {
                     // Producer texture lives on THIS device (pool keeps it
@@ -171,7 +191,14 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
 
                 QRhi* rhi = static_cast<QRhi*>(window()->rendererInterface()->getResource(
                     window(), QSGRendererInterface::RhiResource));
-                if (rhi) {
+                if (!rhi) {
+                    static bool s_failNoRhi = false;
+                    if (!s_failNoRhi) {
+                        s_failNoRhi = true;
+                        HAOCAM_LOG_ERROR(kCategory, "Import step FAILED: no RHI resource "
+                                       "from the renderer interface");
+                    }
+                } else {
                     QRhiTexture* rhiTexture =
                         rhi->newTexture(QRhiTexture::BGRA8,
                                         QSize(static_cast<int>(output.width),
@@ -194,23 +221,57 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
                                               ImportedTexture{native, output.frameId,
                                                               qsgTexture, keepalive})
                                      .first;
+                            m_displayedFrameId = output.frameId; // committed: imported
+                        } else {
+                            static bool s_failQsg = false;
+                            if (!s_failQsg) {
+                                s_failQsg = true;
+                                HAOCAM_LOG_ERROR(kCategory, "Import step FAILED: "
+                                               "createTextureFromRhiTexture returned null");
+                            }
+                            delete rhiTexture;
+                            releaseImportKeepalive(keepalive);
                         }
                     } else {
+                        static bool s_failCreate = false;
+                        if (!s_failCreate) {
+                            s_failCreate = true;
+                            HAOCAM_LOG_ERROR(kCategory, "Import step FAILED: "
+                                           "QRhiTexture::createFrom (importNative={}, "
+                                           "engineNative={}, engineTex={})",
+                                            importNative, native, engineTex.Get() != nullptr);
+                        }
                         delete rhiTexture;
                         releaseImportKeepalive(keepalive);
                     }
                 }
                 if (it == m_imports.end()) {
+                    static bool s_importFailLogged = false;
+                    if (!s_importFailLogged) {
+                        s_importFailLogged = true;
+                        HAOCAM_LOG_ERROR(kCategory, "Frame import incomplete; RETRYING "
+                                       "every sync (see the import step logs)");
+                    }
                     emit previewFailed("Failed to import the final texture into Qt Quick");
-                    return node;
+                    // NO early return: update() below keeps the render loop and
+                    // this retry alive (an early return froze the preview black).
                 }
             }
 
-            node->setTexture(it->second.texture);
-            node->setFiltering(QSGTexture::Linear);
-            node->setRect(boundingRect());
-            node->markDirty(QSGNode::DirtyMaterial | QSGNode::DirtyGeometry);
-            compositor->notifyOutputConsumed(output.frameId);
+            if (it != m_imports.end()) {
+                node->setTexture(it->second.texture);
+                node->setFiltering(QSGTexture::Linear);
+                node->setRect(boundingRect());
+                node->markDirty(QSGNode::DirtyMaterial | QSGNode::DirtyGeometry);
+                compositor->notifyOutputConsumed(output.frameId);
+                static bool s_firstConsume = false;
+                if (!s_firstConsume) {
+                    s_firstConsume = true;
+                    HAOCAM_LOG_INFO(kCategory,
+                                    "First frame CONSUMED by the UI (id={}, {}x{})",
+                                    output.frameId, output.width, output.height);
+                }
+            }
         }
     }
     update(); // keep presenting new frames
