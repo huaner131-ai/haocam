@@ -24,7 +24,6 @@
 namespace haocam::app {
 
 class EngineController;
-struct ID3D11Device;
 
 class VideoView : public QQuickItem {
     Q_OBJECT
