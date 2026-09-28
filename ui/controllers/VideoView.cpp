@@ -77,13 +77,19 @@ QSGNode* VideoView::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData*) {
     // while the ui-heartbeat continues, the render thread is wedged (GUI
     // blocks at the next sync -> "Not Responding").
     {
+        // Quiet probe: report sync health only when something CHANGES (plus a
+        // slow heartbeat) - per-3s spam once drowned out camera diagnostics.
         static std::atomic<uint64_t> s_syncCount{0};
+        static std::atomic<uint64_t> s_lastLoggedFrame{0};
         const uint64_t syncNo = s_syncCount.fetch_add(1) + 1;
-        if (syncNo <= 3 || (syncNo % 300) == 0) {
-            auto* comp = EngineController::sharedCompositor();
+        auto* comp = EngineController::sharedCompositor();
+        const uint64_t latestFrame = comp ? comp->latestFrameId() : 0;
+        const uint64_t logged = s_lastLoggedFrame.load(std::memory_order_relaxed);
+        if (syncNo <= 3 || latestFrame != logged || (syncNo % 3000) == 0) {
+            if (latestFrame != logged)
+                s_lastLoggedFrame.store(latestFrame, std::memory_order_relaxed);
             HAOCAM_LOG_INFO(kCategory, "VideoView sync #{} (compositor={} latestFrame={})",
-                            syncNo, comp ? "ready" : "null",
-                            comp ? comp->latestFrameId() : 0);
+                            syncNo, comp ? "ready" : "null", latestFrame);
         }
     }
 

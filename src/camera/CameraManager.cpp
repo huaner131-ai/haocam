@@ -134,7 +134,11 @@ bool CameraManager::start(const std::string& deviceId) {
     m_running.store(true);
     if (!source->start(m_activeDeviceId, preference)) {
         m_running.store(false);
-        m_lastError = "Failed to start camera";
+        m_lastError = m_activeDeviceId.empty()
+                          ? "Failed to start camera (empty device id)"
+                          : "Failed to start camera";
+        HAOCAM_LOG_ERROR(kCategory, "source->start failed (id empty: {})",
+                         m_activeDeviceId.empty());
         onStateChanged(CameraState::Failed, m_lastError);
         return false;
     }

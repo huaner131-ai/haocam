@@ -1,6 +1,7 @@
 #include "ui/controllers/EngineController.h"
 
 #include <QMetaObject>
+#include <vector>
 #include <QQuickWindow>
 
 #include "core/events/EventBus.h"
@@ -226,10 +227,24 @@ void EngineController::stopEngineThread() {
 void EngineController::startCamera() {
     const std::string lastDevice =
         m_settings ? m_settings->getString("camera", "deviceId", "") : std::string();
-    m_camera->enumerateDevices();
-    if (!lastDevice.empty()) {
+    const std::vector<CameraDevice> devices = m_camera->enumerateDevices();
+    // A persisted deviceId can go stale (virtual cam removed, USB instance
+    // path changed after a replug/reboot). Only reuse it if it still
+    // enumerates; otherwise fall back to auto-pick (physical first).
+    bool lastStillPresent = false;
+    for (const auto& device : devices) {
+        if (device.id == lastDevice) {
+            lastStillPresent = true;
+            break;
+        }
+    }
+    if (!lastDevice.empty() && lastStillPresent) {
         m_camera->start(lastDevice);
     } else {
+        if (!lastDevice.empty()) {
+            HAOCAM_LOG_INFO(kCategory,
+                            "Persisted deviceId no longer present; using auto-select");
+        }
         m_camera->start();
     }
 }

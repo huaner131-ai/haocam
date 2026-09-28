@@ -257,11 +257,15 @@ bool MediaFoundationCapture::start(const std::string& deviceId,
                                    const CameraFormatPreference& preferenceIn) {
     stop();
     if (deviceId.empty()) {
+        HAOCAM_LOG_ERROR(kCategory,
+                         "start() refused: deviceId is EMPTY (caller bug upstream)");
         if (m_callbacks.onStateChanged) {
             m_callbacks.onStateChanged(CameraState::Failed, "No device id");
         }
         return false;
     }
+    HAOCAM_LOG_INFO(kCategory, "Opening device (id starts with '{}')",
+                    deviceId.substr(0, deviceId.find('#') + 1));
 
     CameraFormatPreference preference = preferenceIn;
     if (m_hasRequestedFormat.load()) {
