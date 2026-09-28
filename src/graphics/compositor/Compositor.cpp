@@ -1,5 +1,6 @@
 #include "graphics/compositor/Compositor.h"
 
+#include <atomic>
 #include <chrono>
 #include <cstring>
 
@@ -283,6 +284,51 @@ void Compositor::process(Frame& frame) {
     pipeline->endPrev = tsEnd;
     pipeline->queryInFlight = true;
     m_context->Flush(); // submit now so consumers on other threads see the frame
+
+    // ---- One-shot content probe (diagnostic, engine-side readback) ----
+    // Decisive split: if the final texture holds real pixels, the content
+    // pipeline is fine and the DISPLAY path (Qt import) is at fault; if these
+    // bytes are black, the compositor itself produces black. Runs on frame 1
+    // and every 300th frame only - never per frame.
+    {
+        static std::atomic<uint32_t> s_probeSeq{0};
+        const uint32_t probeNo = s_probeSeq.fetch_add(1);
+        if (probeNo == 0 || (probeNo % 300) == 0) {
+            auto* finalTex = static_cast<ID3D11Texture2D*>(finalTexture->native());
+            D3D11_TEXTURE2D_DESC probeDesc{};
+            finalTex->GetDesc(&probeDesc);
+            probeDesc.Usage = D3D11_USAGE_STAGING;
+            probeDesc.BindFlags = 0;
+            probeDesc.MiscFlags = 0;
+            probeDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+            ID3D11Texture2D* staging = nullptr;
+            if (SUCCEEDED(m_device->CreateTexture2D(&probeDesc, nullptr, &staging)) && staging) {
+                m_context->CopyResource(staging, finalTex);
+                D3D11_MAPPED_SUBRESOURCE mapped{};
+                if (SUCCEEDED(m_context->Map(staging, 0, D3D11_MAP_READ, 0, &mapped))) {
+                    const auto* base = static_cast<const uint8_t*>(mapped.pData);
+                    const uint32_t cx = probeDesc.Width / 2, cy = probeDesc.Height / 2;
+                    const uint8_t* center = base + cy * mapped.RowPitch + cx * 4;
+                    const uint8_t* corner = base + 2 * mapped.RowPitch + 8;
+                    HAOCAM_LOG_INFO(kCategory,
+                                    "Output probe #{}: center BGRA=({},{},{},{}) "
+                                    "corner BGRA=({},{},{},{}) dxgiFmt={}",
+                                    probeNo, center[0], center[1], center[2], center[3],
+                                    corner[0], corner[1], corner[2], corner[3],
+                                    static_cast<unsigned>(probeDesc.Format));
+                    m_context->Unmap(staging, 0);
+                } else {
+                    HAOCAM_LOG_WARN(kCategory, "Output probe #{}: staging Map failed",
+                                    probeNo);
+                }
+                staging->Release();
+            } else {
+                HAOCAM_LOG_WARN(kCategory,
+                                "Output probe #{}: staging texture creation failed",
+                                probeNo);
+            }
+        }
+    }
 
     // ---- Publish into the ring (wait for UI consumption of the slot) ----
     {
