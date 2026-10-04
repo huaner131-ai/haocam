@@ -337,12 +337,13 @@ void HuanFaceProvider::run() {
             // shift every following argument.
             HAOCAM_LOG_INFO(
                 kCategory,
-                "stats: submitted={} processed={} discarded={} faces={} gate={} "
+                "stats: submitted={} processed={} discarded={} passThrough={} faces={} gate={} "
                 "smoothing={} whitening={} rosy={} sharpen={} "
                 "failures={} readbackMs={} sdkMs={} uploadMs={}",
                 m_submittedFrames.load(std::memory_order_relaxed),
                 m_processedFrames.load(std::memory_order_relaxed),
                 m_discardedFrames.load(std::memory_order_relaxed),
+                m_passThroughFrames.load(std::memory_order_relaxed),
                 m_faceCount.load(std::memory_order_relaxed),
                 gate ? "ON" : "off",
                 cfg->smoothing, cfg->whitening, cfg->rosy, cfg->sharpen,
@@ -465,6 +466,37 @@ void HuanFaceProvider::run() {
         if (HF_GetFaceData(static_cast<HFEngine>(m_engine), &tracking) == HF_RESULT_OK) {
             m_faceCount.store(tracking.faceCount, std::memory_order_relaxed);
             HF_FreeFaceData(&tracking);
+        }
+
+        // ---- Pass-through detector ----
+        // Gate ON + a face present, yet the output is bit-identical to the
+        // input on sampled pixels: the SDK skipped beauty (feature disabled
+        // internally / ProcessCPU failed silently and degraded to
+        // pass-through). The pipeline cannot break on that, but it must be
+        // VISIBLE - this counter goes straight into the periodic stats.
+        {
+            const int facesNow = m_faceCount.load(std::memory_order_relaxed);
+            const bool gateOn = config->smoothing > 0.0f || config->whitening > 0.0f ||
+                                config->rosy > 0.0f || config->sharpen > 0.0f;
+            if (gateOn && facesNow > 0 && outFrame.data && procData) {
+                bool identical = true;
+                const int inStride = static_cast<int>(procW) * 4;
+                for (int sy = 0; sy < 8 && identical; ++sy) {
+                    const int y = (static_cast<int>(procH) - 1) * sy / 7;
+                    const uint8_t* ri = procData + static_cast<size_t>(y) * inStride;
+                    const uint8_t* ro =
+                        outFrame.data + static_cast<size_t>(y) * outFrame.stride;
+                    for (int sx = 0; sx < 8; ++sx) {
+                        const int x = (static_cast<int>(procW) - 1) * sx / 7;
+                        if (ri[x * 4] != ro[x * 4] || ri[x * 4 + 1] != ro[x * 4 + 1] ||
+                            ri[x * 4 + 2] != ro[x * 4 + 2]) {
+                            identical = false;
+                            break;
+                        }
+                    }
+                }
+                if (identical) m_passThroughFrames.fetch_add(1, std::memory_order_relaxed);
+            }
         }
 
         // ---- Output BGRA -> GPU upload (pooled texture) ----

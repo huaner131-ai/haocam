@@ -21,8 +21,6 @@ sdk/openmakeup/*
 sdk/snap/*
 sdk/mediapipe/*
 !sdk/mediapipe/README.md
-sdk/huanface/*
-!sdk/huanface/README.md
 !sdk/snap/README.md
 
 # Runtime artifacts

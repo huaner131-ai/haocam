@@ -172,6 +172,7 @@ private:
     std::atomic<uint64_t> m_submittedFrames{0};
     std::atomic<uint64_t> m_processFailures{0};
     std::atomic<uint64_t> m_discardedFrames{0};
+    std::atomic<uint64_t> m_passThroughFrames{0};
 };
 
 

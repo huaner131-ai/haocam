@@ -392,7 +392,12 @@ void Compositor::process(Frame& frame) {
                                 0.0f, 1.0f};
         m_context->RSSetViewports(1, &viewport);
 
-        ID3D11ShaderResourceView* srv = processedViews->srvPlane0;
+        // Sample the OVERRIDE when present (beauty output); falls back to the
+        // processed frame via compositeViews above. Bug 2026-10-04: this bind
+        // read processedViews unconditionally, so the composite override was
+        // selected, validated - and never actually rendered (async beauty was
+        // invisible on screen while every counter looked healthy).
+        ID3D11ShaderResourceView* srv = compositeViews->srvPlane0;
         m_context->PSSetShaderResources(0, 1, &srv);
         m_context->PSSetSamplers(0, 1, &sampler);
         // Bind this program's OWN VS constants. D3D11 context state is sticky:
