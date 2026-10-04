@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <chrono>
 #include <cstring>
+#include <thread>
+#include <vector>
 
 namespace huanface {
 
@@ -167,6 +169,33 @@ HFImage CPUBeautyRenderer::GaussianBlurROI(const HFImage& input, const HFBeautyM
 }
 
 // Edge-aware: bilateral-like approximation using color distance + spatial — Phase 8 Optimized with ROI
+namespace {
+// Row-parallel map over [yBegin,yEnd). Rows are independent (each writes only
+// its own output rows, inputs are read-only), so a plain thread split is safe.
+// The reference blur was single-threaded and dominated the whole frame time
+// (~380 ms at 1280x720 on a desktop CPU); splitting by rows restores usable
+// frame rates on multi-core machines.
+template <typename Fn>
+void ParallelForRows(int yBegin, int yEnd, Fn&& fn) {
+    const int rows = yEnd - yBegin;
+    if (rows <= 0) return;
+    unsigned hw = std::thread::hardware_concurrency();
+    if (hw == 0) hw = 4;
+    const int chunks = static_cast<int>(std::min<unsigned>(hw, 16));
+    if (chunks <= 1 || rows < chunks * 4) { fn(yBegin, yEnd); return; }
+    const int chunk = (rows + chunks - 1) / chunks;
+    std::vector<std::thread> workers;
+    workers.reserve(static_cast<size_t>(chunks));
+    for (int c = 0; c < chunks; ++c) {
+        const int y0 = yBegin + c * chunk;
+        const int y1 = std::min(yEnd, y0 + chunk);
+        if (y0 >= y1) break;
+        workers.emplace_back([&fn, y0, y1] { fn(y0, y1); });
+    }
+    for (auto& t : workers) t.join();
+}
+} // namespace
+
 HFImage CPUBeautyRenderer::BilateralLikeBlur(const HFImage& input, const HFBeautyMask& mask, float radius, float edgePreservation, float intensity) {
     if (radius<=0.1f || intensity<=0.001f) return input;
     int r = (int)std::ceil(radius*2.0f);
@@ -204,8 +233,9 @@ HFImage CPUBeautyRenderer::BilateralLikeBlur(const HFImage& input, const HFBeaut
     float sigmaColor = 0.1f + (1.0f-edgePreservation)*0.4f;
     float sigmaColor2 = 2*sigmaColor*sigmaColor;
 
-    // Process only ROI
-    for(int y=minY;y<=maxY;++y){
+    // Process only ROI (rows in parallel)
+    ParallelForRows(minY, maxY + 1, [&](int rowBegin, int rowEnd){
+    for(int y=rowBegin;y<rowEnd;++y){
         for(int x=minX;x<=maxX;++x){
             float maskAlpha = mask.GetAlpha(x,y);
             if(maskAlpha<=0.001f) continue;
@@ -264,6 +294,7 @@ HFImage CPUBeautyRenderer::BilateralLikeBlur(const HFImage& input, const HFBeaut
             }
         }
     }
+    }); // ParallelForRows
     return output;
 }
 

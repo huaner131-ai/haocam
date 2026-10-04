@@ -341,8 +341,10 @@ bool HFBeautyMaskGenerator::GenerateFaceMask(const HFFaceData& face, int w, int 
         }
     }
 
-    // Feather for soft edge
-    ApplyFeather(out, 2.0f);
+    // Feather for soft edge. 2 px left a visibly hard boundary ("a drawn
+    // circle") whenever the underlying landmarks are approximate (heuristic
+    // tracker) - a wide gradient makes the effect boundary imperceptible.
+    ApplyFeather(out, 12.0f);
     return ValidateMask(out, err);
 }
 
