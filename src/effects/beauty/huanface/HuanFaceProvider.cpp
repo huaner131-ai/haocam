@@ -312,20 +312,24 @@ void HuanFaceProvider::run() {
             const bool gate =
                 cfg->smoothing > 0.0f || cfg->whitening > 0.0f || cfg->rosy > 0.0f ||
                 cfg->sharpen > 0.0f;
+            // NOTE: the project logger supports only "{}" placeholders (no
+            // printf-style precision) - "{:.2f}" would print literally and
+            // shift every following argument.
             HAOCAM_LOG_INFO(
                 kCategory,
-                "stats: submitted={} processed={} faces={} gate={} "
-                "(smoothing={:.2f} whitening={:.2f} rosy={:.2f} sharpen={:.2f}) "
-                "failures={} readback={:.1f}ms sdk={:.1f}ms upload={:.1f}ms",
+                "stats: submitted={} processed={} discarded={} faces={} gate={} "
+                "smoothing={} whitening={} rosy={} sharpen={} "
+                "failures={} readbackMs={} sdkMs={} uploadMs={}",
                 m_submittedFrames.load(std::memory_order_relaxed),
                 m_processedFrames.load(std::memory_order_relaxed),
+                m_discardedFrames.load(std::memory_order_relaxed),
                 m_faceCount.load(std::memory_order_relaxed),
                 gate ? "ON" : "off",
                 cfg->smoothing, cfg->whitening, cfg->rosy, cfg->sharpen,
                 m_processFailures.load(std::memory_order_relaxed),
-                m_readbackMs.load(std::memory_order_relaxed),
-                m_sdkProcessMs.load(std::memory_order_relaxed),
-                m_uploadMs.load(std::memory_order_relaxed));
+                static_cast<int>(m_readbackMs.load(std::memory_order_relaxed)),
+                static_cast<int>(m_sdkProcessMs.load(std::memory_order_relaxed)),
+                static_cast<int>(m_uploadMs.load(std::memory_order_relaxed)));
         }
 
         // ---- Engine lifecycle (created/retried on this thread) ----
@@ -434,6 +438,10 @@ void HuanFaceProvider::run() {
         // ---- Output BGRA -> GPU upload (pooled texture) ----
         if (outFrame.width != static_cast<int>(width) ||
             outFrame.height != static_cast<int>(height) || !outFrame.data) {
+            // Counted (not silent): a metadata-only OK frame with no data is
+            // exactly what an UNPATCHED HuanFace C-API returns on the
+            // with-face path - this counter is how we see it from the log.
+            m_discardedFrames.fetch_add(1, std::memory_order_relaxed);
             HAOCAM_LOG_DEBUG(kCategory, "HuanFace output size/format mismatch");
             HF_FreeFrame(&outFrame);
             continue;
