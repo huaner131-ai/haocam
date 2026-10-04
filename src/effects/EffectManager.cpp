@@ -101,9 +101,12 @@ bool EffectManager::initialize(const EffectContext& context) {
 #endif
     }
 
-    if (auto* nullBeauty = dynamic_cast<NullBeautyProvider*>(m_beauty.get())) {
-        (void)nullBeauty; // status text is carried by the provider itself
-    }
+    // Start the beauty provider (spawns its worker thread; the SDK engine is
+    // created/retried there). configure() must have run first. Providers log
+    // their own failure reasons; the init summary below carries statusText.
+    // Without this call the provider never leaves "Not initialized" and
+    // submitFrame is gated off forever (isAvailable() == false).
+    if (m_beauty) m_beauty->initialize(context);
 
     // ---- GPU compositor (Windows) ----
 #ifdef _WIN32
