@@ -256,6 +256,8 @@ if(HAOCAM_HAS_FACEBETTER)
     endif()
     foreach(_fbd ${HAOCAM_FB_RESOURCES})
         add_custom_command(TARGET haocam_core POST_BUILD
+            # cmake -E copy* does NOT create the destination directory.
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${HAOCAM_FB_RES_DEST}/"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_fbd}" "${HAOCAM_FB_RES_DEST}/")
     endforeach()
 endif()
