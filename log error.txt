@@ -1,42 +1,6 @@
 PS C:\Users\fourk\source\repos> cd D:\cam\haocam
-PS D:\cam\haocam> git pull
-remote: Enumerating objects: 47, done.
-remote: Counting objects: 100% (47/47), done.
-remote: Compressing objects: 100% (22/22), done.
-remote: Total 33 (delta 13), reused 13 (delta 10), pack-reused 0 (from 0)
-Unpacking objects: 100% (33/33), 27.56 MiB | 10.48 MiB/s, done.
-From https://github.com/huaner131-ai/haocam
-   cfb3e44..72d6c78  arena/01a0de8b-haocam -> origin/arena/01a0de8b-haocam
-   627c4e8..40c8ad3  main                  -> origin/main
-Updating cfb3e44..72d6c78
-Fast-forward
- .gitignore                                         |   2 -
- CMakeLists.txt                                     |  11 +
- sdk/facebetter/README.md                           |  43 +-
- .../include/facebetter/beauty_effect_engine.h      | 432 +++++++++++++
- sdk/facebetter/include/facebetter/beauty_params.h  | 228 +++++++
- sdk/facebetter/include/facebetter/fb_c_api.h       | 688 +++++++++++++++++++++
- sdk/facebetter/include/facebetter/image_frame.h    | 380 ++++++++++++
- sdk/facebetter/include/facebetter/type_defines.h   | 220 +++++++
- sdk/facebetter/lib/facebetter.dll                  | Bin 0 -> 8312320 bytes
- sdk/facebetter/lib/facebetter.lib                  | Bin 0 -> 154636 bytes
- sdk/facebetter/resource/resource.fbd               | Bin 0 -> 7100875 bytes
- sdk/facebetter/resource/resource_3d.fbd            | Bin 0 -> 9681690 bytes
- sdk/facebetter/resource/resource_body.fbd          | Bin 0 -> 8858861 bytes
- src/effects/EffectManager.cpp                      |  12 +-
- src/effects/beauty/FacebetterProvider.cpp          |  47 +-
- src/effects/beauty/FacebetterProvider.h            |   1 +
- 16 files changed, 2035 insertions(+), 29 deletions(-)
- create mode 100644 sdk/facebetter/include/facebetter/beauty_effect_engine.h
- create mode 100644 sdk/facebetter/include/facebetter/beauty_params.h
- create mode 100644 sdk/facebetter/include/facebetter/fb_c_api.h
- create mode 100644 sdk/facebetter/include/facebetter/image_frame.h
- create mode 100644 sdk/facebetter/include/facebetter/type_defines.h
- create mode 100644 sdk/facebetter/lib/facebetter.dll
- create mode 100644 sdk/facebetter/lib/facebetter.lib
- create mode 100644 sdk/facebetter/resource/resource.fbd
- create mode 100644 sdk/facebetter/resource/resource_3d.fbd
- create mode 100644 sdk/facebetter/resource/resource_body.fbd
+PS D:\cam\haocam> git pull          # sampai a3fb44e
+Already up to date.
 PS D:\cam\haocam> cmake --preset windows-base -DHAOCAM_ENABLE_HUANFACE=ON -DHAOCAM_ENABLE_FACEBETTER=ON
 -- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
 -- Facebetter SDK found - FacebetterProvider enabled
@@ -54,150 +18,17 @@ CMake Warning at C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6/QtPublicDependencyHelper
 Call Stack (most recent call first):
   C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6GuiPrivate/Qt6GuiPrivateConfig.cmake:48 (_qt_internal_show_private_module_warning)
   C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake:257 (find_package)
-  CMakeLists.txt:294 (find_package)
+  CMakeLists.txt:296 (find_package)
 
 
 -- Configuring done (1.0s)
--- Generating done (1.1s)
+-- Generating done (1.0s)
 -- Build files have been written to: D:/cam/haocam/build/windows
 PS D:\cam\haocam> cmake --build --preset windows --config Release
 MSBuild version 17.14.60+43b635718 for .NET Framework
 
-  -- haocam build stamp -> 72d6c78
+  -- haocam build stamp -> a3fb44e
   huanface_sdk.vcxproj -> D:\cam\haocam\build\windows\Release\huanface_sdk.lib
-  Logger.cpp
-  Json.cpp
-  AppConfig.cpp
-  AppSettings.cpp
-  EventBus.cpp
-  FramePool.cpp
-  FaceLandmarks.cpp
-  FaceTracking.cpp
-  TrackingWorker.cpp
-  EffectGraph.cpp
-D:\cam\haocam\src\core\logging\Logger.cpp(4,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\cam\haocam
-\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\core\logging\Logger.cpp(4,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\core\logging\Logger.cpp(5,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\build\wind
-ows\haocam_core.vcxproj]
-      D:\cam\haocam\src\core\logging\Logger.cpp(5,9):
-      'NOMINMAX' previously declared on the command line
-
-D:\cam\haocam\src\core\settings\AppSettings.cpp(15,30): warning C4996: 'getenv': This function or variable may be unsaf
-e. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-[D:\cam\haocam\build\windows\haocam_core.vcxproj]
-D:\cam\haocam\src\core\settings\AppSettings.cpp(21,40): warning C4996: 'getenv': This function or variable may be unsaf
-e. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-[D:\cam\haocam\build\windows\haocam_core.vcxproj]
-  EffectManager.cpp
-  BeautyConfig.cpp
-  NullBeautyProvider.cpp
-  CameraFormat.cpp
-  CameraManager.cpp
-  NullCameraSource.cpp
-  MediaFoundationCapture.cpp
-  MediaPipePixelSource.cpp
-  D3D11Context.cpp
-  D3D11Texture.cpp
-D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(15,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:
-\cam\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(15,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(16,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam
-\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(16,9):
-      'NOMINMAX' previously declared on the command line
-
-D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(390,26): warning C4245: 'initializing': conversion from '__MIDL___M
-IDL_itf_mfreadwrite_0000_0001_0001' to 'DWORD', signed/unsigned mismatch [D:\cam\haocam\build\windows\haocam_core.vcxpr
-oj]
-  D3D11Shader.cpp
-D:\cam\haocam\src\face\MediaPipePixelSource.cpp(11,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\cam
-\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\face\MediaPipePixelSource.cpp(11,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\face\MediaPipePixelSource.cpp(12,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\bui
-ld\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\face\MediaPipePixelSource.cpp(12,9):
-      'NOMINMAX' previously declared on the command line
-
-D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(7,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\ca
-m\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(7,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(8,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\bu
-ild\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(8,9):
-      'NOMINMAX' previously declared on the command line
-
-D:\cam\haocam\src\graphics\D3D11\D3D11Texture.cpp(5,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\ca
-m\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\D3D11Texture.cpp(5,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\graphics\D3D11\D3D11Texture.cpp(6,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\bu
-ild\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\D3D11Texture.cpp(6,9):
-      'NOMINMAX' previously declared on the command line
-
-  D3D11TexturePool.cpp
-  GpuFrameCopier.cpp
-D:\cam\haocam\src\graphics\D3D11\D3D11Shader.cpp(7,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\cam
-\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\D3D11Shader.cpp(7,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\graphics\D3D11\D3D11Shader.cpp(8,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\bui
-ld\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\D3D11Shader.cpp(8,9):
-      'NOMINMAX' previously declared on the command line
-
-  Compositor.cpp
-  RenderGraph.cpp
-  FacebetterProvider.cpp
-  HuanFaceProvider.cpp
-D:\cam\haocam\src\graphics\D3D11\GpuFrameCopier.cpp(8,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\
-cam\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\GpuFrameCopier.cpp(8,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\graphics\D3D11\GpuFrameCopier.cpp(9,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\
-build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\GpuFrameCopier.cpp(9,9):
-      'NOMINMAX' previously declared on the command line
-
-D:\cam\haocam\src\graphics\compositor\Compositor.cpp(11,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D
-:\cam\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\compositor\Compositor.cpp(11,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\graphics\compositor\Compositor.cpp(12,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haoca
-m\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\compositor\Compositor.cpp(12,9):
-      'NOMINMAX' previously declared on the command line
-
-D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(18,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redef
-inition [D:\cam\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(18,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(19,9): warning C4005: 'NOMINMAX': macro redefinition [D:
-\cam\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(19,9):
-      'NOMINMAX' previously declared on the command line
-
-D:\cam\haocam\sdk\facebetter\include\facebetter\image_frame.h(375,32): warning C4251: 'facebetter::ImageFrame::image_bu
-ffer_': 'std::shared_ptr<facebetter::ImageBuffer>' needs to have dll-interface to be used by clients of 'facebetter::Im
-ageFrame' [D:\cam\haocam\build\windows\haocam_core.vcxproj]
-  (compiling source file '../../src/effects/beauty/FacebetterProvider.cpp')
-      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
-      see declaration of 'std::shared_ptr<facebetter::ImageBuffer>'
-
   haocam_core.vcxproj -> D:\cam\haocam\build\windows\Release\haocam_core.lib
   Error copying file (if different) from "D:/cam/haocam/sdk/facebetter/resource/resource.fbd" to "D:/cam/haocam/build/w
   indows/Release/facebetter_resources/": No such file or directory
@@ -224,6 +55,11 @@ rror MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\cam\haocam\build\windows\hao
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
 rror MSB3073: setlocal [D:\cam\haocam\build\windows\haocam_core.vcxproj]
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E make_directory D:/cam/haocam/build/windows/Release/facebetter_r
+esources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
 rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different D:/cam/haocam/sdk/facebetter/resource/resourc
 e.fbd D:/cam/haocam/build/windows/Release/facebetter_resources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
@@ -243,6 +79,11 @@ C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v17
 rror MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
 rror MSB3073: setlocal [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E make_directory D:/cam/haocam/build/windows/Release/facebetter_r
+esources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
 rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different D:/cam/haocam/sdk/facebetter/resource/resourc
 e_3d.fbd D:/cam/haocam/build/windows/Release/facebetter_resources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
@@ -264,6 +105,11 @@ rror MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\cam\haocam\build\windows\hao
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
 rror MSB3073: setlocal [D:\cam\haocam\build\windows\haocam_core.vcxproj]
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E make_directory D:/cam/haocam/build/windows/Release/facebetter_r
+esources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
 rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different D:/cam/haocam/sdk/facebetter/resource/resourc
 e_body.fbd D:/cam/haocam/build/windows/Release/facebetter_resources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
@@ -283,3 +129,4 @@ C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v17
 rror MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
 C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
 rror MSB3073: :VCEnd" exited with code 1. [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+PS D:\cam\haocam> .\build\windows\Release\haocam.exe
