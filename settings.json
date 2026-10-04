@@ -1,0 +1,14 @@
+{
+  "camera": {
+    "deviceId": "\\\\?\\usb#vid_32e6&pid_9221&mi_00#7&2901e55e&0&0000#{e5323777-f976-4f5b-9b55-b94699c46e44}\\global",
+    "mirror": true
+  },
+  "diagnostics": {
+    "overlayVisible": true
+  },
+  "filters": {
+    "brightness": 6,
+    "contrast": 0,
+    "saturation": 0
+  }
+}
