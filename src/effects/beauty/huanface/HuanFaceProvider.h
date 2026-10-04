@@ -43,6 +43,7 @@
 #if defined(_WIN32)
 namespace haocam::gfx {
 class GpuFrameCopier;
+class D3D11TexturePool;
 }
 #endif
 
@@ -100,6 +101,12 @@ public:
     void submitFrame(const GpuTextureRef& texture, uint64_t frameId);
     bool latestOutput(GpuTextureRef& outTexture, uint64_t& outFrameId) const;
 
+    // The SDK's CPU reference path costs >1 s per frame at 1440p, so outputs
+    // legitimately lag far more than a fast GPU provider's. Hold-latest: the
+    // compositor keeps showing the most recent beautified frame (the provider
+    // also publishes no-face pass-throughs, so the preview stays live).
+    uint64_t maxLagFrames() const;
+
     // Diagnostics
     double lastReadbackMs() const { return m_readbackMs.load(); }
     double lastSdkProcessMs() const { return m_sdkProcessMs.load(); }
@@ -130,8 +137,13 @@ private:
     void* m_engine = nullptr; // HFEngine (opaque; C API only in the .cpp)
 #if defined(_WIN32)
     std::unique_ptr<gfx::GpuFrameCopier> m_copier; // Windows only (D3D11 copies)
+    // Created when the EffectContext supplies no texture pool (the engine
+    // currently never does): without it every processed frame was dropped.
+    std::shared_ptr<gfx::D3D11TexturePool> m_ownPool;
 #endif
-    std::vector<uint8_t> m_readBuffer; // BGRA readback + output scratch (reused)
+    std::vector<uint8_t> m_readBuffer;  // BGRA readback scratch (reused)
+    std::vector<uint8_t> m_smallBuffer; // downscaled SDK input (reused)
+    std::vector<uint8_t> m_scaleBuffer; // upscaled SDK output (reused)
     BeautyConfig m_engineConfig;       // last applied to the engine
 
     // --- pending input slot (overwrite = drop-stale) ---
@@ -162,4 +174,57 @@ private:
     std::atomic<uint64_t> m_discardedFrames{0};
 };
 
+
+// Pure CPU BGRA8 resize helpers used to cap the HuanFace SDK input
+// resolution (its CPU path scales with pixel count). Header-inline so the
+// unit tests can exercise them on every platform.
+inline void huanfaceDownscale2x(const uint8_t* src, int w, int h, uint8_t* dst) {
+    const int dw = w / 2;
+    const int dh = h / 2;
+    for (int y = 0; y < dh; ++y) {
+        const uint8_t* r0 = src + static_cast<size_t>(2 * y) * w * 4;
+        const uint8_t* r1 = r0 + static_cast<size_t>(w) * 4;
+        uint8_t* d = dst + static_cast<size_t>(y) * dw * 4;
+        for (int x = 0; x < dw; ++x) {
+            for (int c = 0; c < 4; ++c) {
+                const int sum = r0[(2 * x) * 4 + c] + r0[(2 * x + 1) * 4 + c] +
+                                r1[(2 * x) * 4 + c] + r1[(2 * x + 1) * 4 + c];
+                d[x * 4 + c] = static_cast<uint8_t>((sum + 2) >> 2);
+            }
+        }
+    }
+}
+
+inline void huanfaceUpscaleBilinear(const uint8_t* src, int sw, int sh, uint8_t* dst,
+                                    int dw, int dh) {
+    const float sx = (sw > 1) ? static_cast<float>(sw - 1) / static_cast<float>(dw - 1)
+                              : 0.0f;
+    const float sy = (sh > 1) ? static_cast<float>(sh - 1) / static_cast<float>(dh - 1)
+                              : 0.0f;
+    for (int y = 0; y < dh; ++y) {
+        const float fy = y * sy;
+        const int y0 = static_cast<int>(fy);
+        const int y1 = (y0 + 1 < sh) ? y0 + 1 : y0;
+        const float ly = fy - static_cast<float>(y0);
+        uint8_t* d = dst + static_cast<size_t>(y) * dw * 4;
+        for (int x = 0; x < dw; ++x) {
+            const float fx = x * sx;
+            const int x0 = static_cast<int>(fx);
+            const int x1 = (x0 + 1 < sw) ? x0 + 1 : x0;
+            const float lx = fx - static_cast<float>(x0);
+            const uint8_t* p00 = src + (static_cast<size_t>(y0) * sw + x0) * 4;
+            const uint8_t* p01 = src + (static_cast<size_t>(y0) * sw + x1) * 4;
+            const uint8_t* p10 = src + (static_cast<size_t>(y1) * sw + x0) * 4;
+            const uint8_t* p11 = src + (static_cast<size_t>(y1) * sw + x1) * 4;
+            for (int c = 0; c < 4; ++c) {
+                const float v = p00[c] * (1.0f - lx) * (1.0f - ly) +
+                                p01[c] * lx * (1.0f - ly) +
+                                p10[c] * (1.0f - lx) * ly + p11[c] * lx * ly;
+                d[x * 4 + c] = static_cast<uint8_t>(v + 0.5f);
+            }
+        }
+    }
+}
+
 } // namespace haocam
+

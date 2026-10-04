@@ -202,7 +202,7 @@ void EffectManager::process(Frame& frame) {
     if (m_beauty && m_beauty->isAvailable()) {
         if (auto* facebetter = dynamic_cast<IBeautyAsync*>(m_beauty.get())) {
             if (facebetter->latestOutput(beautyOutput, beautyFrameId) &&
-                beautyFrameId + kBeautyMaxLagFrames >= frame.id) {
+                beautyFrameId + facebetter->maxLagFrames() >= frame.id) {
                 m_compositor->setCompositeOverride(beautyOutput);
                 m_lastBeautyFrameId = beautyFrameId;
             } else {

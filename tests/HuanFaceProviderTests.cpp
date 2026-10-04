@@ -51,3 +51,51 @@ HAOCAM_TEST(huanface_provider_engine_lifecycle) {
     provider.shutdown();
     HAOCAM_EXPECT(!provider.isAvailable() || true); // shutdown must not crash
 }
+
+HAOCAM_TEST(huanface_downscale2x_solid_and_average) {
+    // Solid colour must survive a 2x2 box downscale unchanged.
+    std::vector<uint8_t> src(16 * 8 * 4, 0);
+    for (size_t i = 0; i < src.size(); i += 4) {
+        src[i + 0] = 200; src[i + 1] = 100; src[i + 2] = 50; src[i + 3] = 255;
+    }
+    std::vector<uint8_t> dst(8 * 4 * 4);
+    haocam::huanfaceDownscale2x(src.data(), 16, 8, dst.data());
+    for (size_t i = 0; i < dst.size(); i += 4) {
+        HAOCAM_EXPECT_EQ(dst[i + 0], 200);
+        HAOCAM_EXPECT_EQ(dst[i + 1], 100);
+        HAOCAM_EXPECT_EQ(dst[i + 2], 50);
+        HAOCAM_EXPECT_EQ(dst[i + 3], 255);
+    }
+    // 2x2 of four distinct values: every channel averages its quad.
+    std::vector<uint8_t> quad(2 * 2 * 4);
+    const uint8_t vals[4] = {10, 30, 50, 70};
+    for (int px = 0; px < 4; ++px)
+        for (int c = 0; c < 4; ++c) quad[px * 4 + c] = vals[px] + static_cast<uint8_t>(c);
+    std::vector<uint8_t> one(1 * 1 * 4);
+    haocam::huanfaceDownscale2x(quad.data(), 2, 2, one.data());
+    for (int c = 0; c < 4; ++c) {
+        const int avg = (10 + 30 + 50 + 70) / 4 + c;
+        HAOCAM_EXPECT_EQ(one[c], static_cast<uint8_t>(avg));
+    }
+}
+
+HAOCAM_TEST(huanface_upscale_bilinear_corners_and_gradient) {
+    // 2x2 source (left column black, right column white) -> 5x5 target.
+    const uint8_t src[2 * 2 * 4] = {
+        0, 0, 0, 255,   255, 255, 255, 255,
+        0, 0, 0, 255,   255, 255, 255, 255,
+    };
+    std::vector<uint8_t> dst(5 * 5 * 4);
+    haocam::huanfaceUpscaleBilinear(src, 2, 2, dst.data(), 5, 5);
+    // Corners keep the source corner values.
+    HAOCAM_EXPECT_EQ(dst[0], 0);
+    HAOCAM_EXPECT_EQ(dst[4 * 4 + 0], 255);
+    // Middle pixel is mid-grey (all channels equal, alpha opaque).
+    const uint8_t* mid = dst.data() + (2 * 5 + 2) * 4;
+    HAOCAM_EXPECT(mid[0] > 100 && mid[0] < 155);
+    // Horizontal gradient is monotonic non-decreasing in a row.
+    bool monotonic = true;
+    for (int x = 1; x < 5; ++x)
+        if (dst[x * 4 + 0] < dst[(x - 1) * 4 + 0]) monotonic = false;
+    HAOCAM_EXPECT(monotonic);
+}

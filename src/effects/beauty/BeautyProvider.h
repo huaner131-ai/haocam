@@ -108,6 +108,10 @@ public:
     virtual ~IBeautyAsync() = default;
     virtual void submitFrame(const GpuTextureRef& texture, uint64_t frameId) = 0;
     virtual bool latestOutput(GpuTextureRef& outTexture, uint64_t& outFrameId) const = 0;
+    // How many camera frames a beauty output may lag behind the current frame
+    // before EffectManager drops the composite override as stale. Default
+    // suits fast GPU providers; slow CPU providers override (e.g. hold-latest).
+    virtual uint64_t maxLagFrames() const { return 3; }
 };
 
 float clamp01(float value);

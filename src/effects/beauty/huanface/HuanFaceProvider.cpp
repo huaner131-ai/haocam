@@ -11,6 +11,7 @@
 #include "effects/EffectContext.h"
 #if defined(_WIN32)
 #include "graphics/D3D11/GpuFrameCopier.h"
+#include "graphics/D3D11/D3D11Texture.h" // D3D11TexturePool (own-pool fallback)
 #endif
 
 #ifdef _WIN32
@@ -21,6 +22,8 @@
 #endif
 
 #include <huanface_c_api.h>
+
+#include <limits>
 
 namespace haocam {
 
@@ -38,6 +41,10 @@ void publishBeautyStatus(const std::string& provider, bool available,
 }
 constexpr int kRetryMs = 4000; // engine (re)create retry window
 constexpr int kTelemetryMs = 5000; // periodic one-line pipeline stats
+// The SDK's CPU reference path costs >1 s/frame at 2560x1440; capping its
+// input width keeps the whole path ~4x cheaper (2x2 box downscale, bilinear
+// upscale back before upload).
+constexpr uint32_t kMaxSdkWidth = 1280;
 
 // Parameter names per HFBeautyParameters::ToFloatMap (SDK beauty_params.h).
 constexpr const char* kPEnabled = "beauty.enabled";
@@ -78,6 +85,12 @@ bool HuanFaceProvider::initialize(const EffectContext& context) {
         setStatus("GPU copier unavailable (no D3D11 device)", false);
         // Keep the worker alive: it will report a precise status and retry.
     }
+    if (m_device && !m_texturePool) {
+        // EffectContext::texturePool is currently never set - without our own
+        // pool every processed frame was silently dropped at upload time.
+        m_ownPool = gfx::D3D11TexturePool::create(m_device);
+        m_texturePool = m_ownPool.get();
+    }
 #else
     setStatus("CPU/CI build: engine lifecycle only (no GPU copies)", false);
 #endif
@@ -107,6 +120,7 @@ void HuanFaceProvider::shutdown() {
     }
 #if defined(_WIN32)
     m_copier.reset();
+    m_ownPool.reset();
 #endif
 }
 
@@ -181,6 +195,12 @@ void HuanFaceProvider::setJawSlim(float) { /* unsupported by the SDK yet */ }
 void HuanFaceProvider::reset() { storeConfig(BeautyConfig{}); }
 
 BeautyConfig HuanFaceProvider::config() const { return *snapshotConfig(); }
+
+uint64_t HuanFaceProvider::maxLagFrames() const {
+    // Half the uint64 range = never stale (hold-latest); avoids overflow in
+    // EffectManager's `beautyFrameId + maxLag >= frame.id` check.
+    return std::numeric_limits<uint64_t>::max() / 2;
+}
 
 void HuanFaceProvider::submitFrame(const GpuTextureRef& texture, uint64_t frameId) {
     {
@@ -390,19 +410,31 @@ void HuanFaceProvider::run() {
                 .count(),
             std::memory_order_relaxed);
 
-        // ---- Apply config diff, then process (public C API) ----
+        // ---- Cap SDK resolution, apply config diff, process (public C API) ----
+        uint32_t procW = width;
+        uint32_t procH = height;
+        const uint8_t* procData = m_readBuffer.data();
+        if (width > kMaxSdkWidth) {
+            procW = width / 2;
+            procH = height / 2;
+            m_smallBuffer.resize(static_cast<size_t>(procW) * procH * 4);
+            huanfaceDownscale2x(m_readBuffer.data(), static_cast<int>(width),
+                                static_cast<int>(height), m_smallBuffer.data());
+            procData = m_smallBuffer.data();
+        }
+
         const auto config = snapshotConfig();
         if (*config != m_engineConfig) {
             applyConfigToEngine(*config);
         }
 
         HFFrameC inFrame{};
-        inFrame.width = static_cast<int>(width);
-        inFrame.height = static_cast<int>(height);
+        inFrame.width = static_cast<int>(procW);
+        inFrame.height = static_cast<int>(procH);
         inFrame.format = HF_FORMAT_BGRA8; // the SDK converts internally
         inFrame.timestampNanos = static_cast<int64_t>(inputFrameId) * 33000000LL;
-        inFrame.data = m_readBuffer.data();
-        inFrame.stride = static_cast<int>(width) * 4;
+        inFrame.data = const_cast<uint8_t*>(procData);
+        inFrame.stride = static_cast<int>(procW) * 4;
         inFrame.ownsData = 0;
         inFrame.ownsGpuTexture = 0;
 
@@ -436,8 +468,8 @@ void HuanFaceProvider::run() {
         }
 
         // ---- Output BGRA -> GPU upload (pooled texture) ----
-        if (outFrame.width != static_cast<int>(width) ||
-            outFrame.height != static_cast<int>(height) || !outFrame.data) {
+        if (outFrame.width != static_cast<int>(procW) ||
+            outFrame.height != static_cast<int>(procH) || !outFrame.data) {
             // Counted (not silent): a metadata-only OK frame with no data is
             // exactly what an UNPATCHED HuanFace C-API returns on the
             // with-face path - this counter is how we see it from the log.
@@ -447,10 +479,19 @@ void HuanFaceProvider::run() {
             continue;
         }
 
+        const uint8_t* uploadData = outFrame.data;
+        if (procW != width || procH != height) {
+            m_scaleBuffer.resize(static_cast<size_t>(width) * height * 4);
+            huanfaceUpscaleBilinear(outFrame.data, static_cast<int>(procW),
+                                    static_cast<int>(procH), m_scaleBuffer.data(),
+                                    static_cast<int>(width), static_cast<int>(height));
+            uploadData = m_scaleBuffer.data();
+        }
+
         GpuTextureRef uploaded;
         if (m_texturePool) {
             const auto uploadStart = std::chrono::steady_clock::now();
-            uploaded = m_copier->uploadBGRA(*m_texturePool, outFrame.data, width, height);
+            uploaded = m_copier->uploadBGRA(*m_texturePool, uploadData, width, height);
             m_uploadMs.store(
                 std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() -
                                                           uploadStart)
