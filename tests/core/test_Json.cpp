@@ -88,3 +88,13 @@ HAOCAM_TEST(json_preset_sample_file) {
     HAOCAM_EXPECT(preset.at("makeup").at("lipstick").at("enabled").asBool());
     HAOCAM_EXPECT(!preset.at("ar").at("enabled").asBool());
 }
+
+HAOCAM_TEST(json_parse_utf8_bom) {
+    std::string error;
+    // PowerShell 5.1 `Set-Content -Encoding utf8` writes a UTF-8 BOM;
+    // config.json written that way must still parse.
+    JsonValue value =
+        JsonValue::parse("\xEF\xBB\xBF{\"huanface\":{\"enabled\":true}}", &error);
+    HAOCAM_EXPECT(error.empty());
+    HAOCAM_EXPECT(value.at("huanface").at("enabled").asBool(false));
+}

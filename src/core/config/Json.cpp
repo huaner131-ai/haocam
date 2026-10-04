@@ -348,6 +348,15 @@ void JsonValue::clear() {
 }
 
 JsonValue JsonValue::parse(std::string_view text, std::string* error) {
+    // Tolerate a leading UTF-8 BOM: common when config.json is written by
+    // Windows tooling (PowerShell 5.1 `Set-Content -Encoding utf8`, some
+    // editors) - without this the file parses as invalid and SDK toggles
+    // silently fall back to defaults.
+    if (text.size() >= 3 && static_cast<unsigned char>(text[0]) == 0xEF &&
+        static_cast<unsigned char>(text[1]) == 0xBB &&
+        static_cast<unsigned char>(text[2]) == 0xBF) {
+        text.remove_prefix(3);
+    }
     Parser parser;
     parser.text = text;
     JsonValue value;
