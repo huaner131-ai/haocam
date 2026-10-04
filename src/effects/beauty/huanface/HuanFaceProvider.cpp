@@ -37,6 +37,7 @@ void publishBeautyStatus(const std::string& provider, bool available,
     core::EventBus::instance().publish(event);
 }
 constexpr int kRetryMs = 4000; // engine (re)create retry window
+constexpr int kTelemetryMs = 5000; // periodic one-line pipeline stats
 
 // Parameter names per HFBeautyParameters::ToFloatMap (SDK beauty_params.h).
 constexpr const char* kPEnabled = "beauty.enabled";
@@ -187,6 +188,7 @@ void HuanFaceProvider::submitFrame(const GpuTextureRef& texture, uint64_t frameI
         m_pendingTexture = texture;
         m_pendingFrameId = frameId;
         m_hasPending = texture != nullptr;
+        if (texture) m_submittedFrames.fetch_add(1, std::memory_order_relaxed);
         m_inputCv.notify_one();
     }
 }
@@ -297,8 +299,35 @@ BeautyResult HuanFaceProvider::process(const Frame& input, const FaceData& face)
 void HuanFaceProvider::run() {
     core::setThreadName("haocam-beauty");
     auto lastRetry = std::chrono::steady_clock::now() - std::chrono::milliseconds(kRetryMs);
+    auto lastTelemetry = std::chrono::steady_clock::now();
+    auto lastFailureWarn = lastTelemetry;
 
     while (!m_stopRequested.load()) {
+        // ---- Periodic one-line stats (makes silent pass-through visible) ----
+        const auto nowTelem = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(nowTelem - lastTelemetry)
+                .count() >= kTelemetryMs) {
+            lastTelemetry = nowTelem;
+            const auto cfg = snapshotConfig();
+            const bool gate =
+                cfg->smoothing > 0.0f || cfg->whitening > 0.0f || cfg->rosy > 0.0f ||
+                cfg->sharpen > 0.0f;
+            HAOCAM_LOG_INFO(
+                kCategory,
+                "stats: submitted={} processed={} faces={} gate={} "
+                "(smoothing={:.2f} whitening={:.2f} rosy={:.2f} sharpen={:.2f}) "
+                "failures={} readback={:.1f}ms sdk={:.1f}ms upload={:.1f}ms",
+                m_submittedFrames.load(std::memory_order_relaxed),
+                m_processedFrames.load(std::memory_order_relaxed),
+                m_faceCount.load(std::memory_order_relaxed),
+                gate ? "ON" : "off",
+                cfg->smoothing, cfg->whitening, cfg->rosy, cfg->sharpen,
+                m_processFailures.load(std::memory_order_relaxed),
+                m_readbackMs.load(std::memory_order_relaxed),
+                m_sdkProcessMs.load(std::memory_order_relaxed),
+                m_uploadMs.load(std::memory_order_relaxed));
+        }
+
         // ---- Engine lifecycle (created/retried on this thread) ----
         if (!m_engine) {
             const auto now = std::chrono::steady_clock::now();
@@ -382,8 +411,15 @@ void HuanFaceProvider::run() {
             std::chrono::duration<double, std::milli>(processEnd - processStart).count(),
             std::memory_order_relaxed);
         if (rc != HF_RESULT_OK) {
-            HAOCAM_LOG_DEBUG(kCategory, "HuanFace ProcessFrame: {}",
-                             HF_GetResultString(rc));
+            m_processFailures.fetch_add(1, std::memory_order_relaxed);
+            if (std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - lastFailureWarn)
+                    .count() >= kTelemetryMs) {
+                lastFailureWarn = std::chrono::steady_clock::now();
+                HAOCAM_LOG_WARN(kCategory, "HuanFace ProcessFrame failed ({}x so far): {}",
+                                m_processFailures.load(std::memory_order_relaxed),
+                                HF_GetResultString(rc));
+            }
             if (outFrame.data) HF_FreeFrame(&outFrame);
             continue;
         }

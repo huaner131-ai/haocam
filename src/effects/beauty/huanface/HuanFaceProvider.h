@@ -157,6 +157,8 @@ private:
     std::atomic<double> m_uploadMs{0.0};
     std::atomic<int> m_faceCount{0};
     std::atomic<uint64_t> m_processedFrames{0};
+    std::atomic<uint64_t> m_submittedFrames{0};
+    std::atomic<uint64_t> m_processFailures{0};
 };
 
 } // namespace haocam
