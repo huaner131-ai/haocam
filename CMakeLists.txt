@@ -248,18 +248,19 @@ if(HAOCAM_HAS_FACEBETTER)
                 "${HAOCAM_FB_DLL_DEST}/facebetter.dll")
     endif()
     # Ship the engine resources (resource.fbd is REQUIRED by EngineConfig).
-    file(GLOB HAOCAM_FB_RESOURCES "${HAOCAM_FACEBETTER_DIR}/resource/*.fbd")
-    if(HAOCAM_BUILD_APP)
-        set(HAOCAM_FB_RES_DEST "$<TARGET_FILE_DIR:haocam>/facebetter_resources")
+    # Copied at CONFIGURE time (file(COPY) runs inside CMake itself): the
+    # POST_BUILD batch variant failed on the user's machine ("No such file or
+    # directory" from cmake -E copy under MSBuild, even after make_directory).
+    # The provider also resolves the source tree as a fallback, so this is
+    # convenience, not a build dependency.
+    if(EXISTS "${HAOCAM_FACEBETTER_DIR}/resource/resource.fbd")
+        file(COPY "${HAOCAM_FACEBETTER_DIR}/resource/"
+             DESTINATION "${CMAKE_BINARY_DIR}/facebetter_resources/"
+             FILES_MATCHING PATTERN "*.fbd")
     else()
-        set(HAOCAM_FB_RES_DEST "$<TARGET_FILE_DIR:haocam_core>/facebetter_resources")
+        message(WARNING "Facebetter: resource/resource.fbd missing in the drop; "
+                        "set facebetter.resource_path in config.json")
     endif()
-    foreach(_fbd ${HAOCAM_FB_RESOURCES})
-        add_custom_command(TARGET haocam_core POST_BUILD
-            # cmake -E copy* does NOT create the destination directory.
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${HAOCAM_FB_RES_DEST}/"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_fbd}" "${HAOCAM_FB_RES_DEST}/")
-    endforeach()
 endif()
 
 if(HAOCAM_HAS_MEDIAPIPE)

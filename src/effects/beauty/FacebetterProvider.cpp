@@ -239,10 +239,14 @@ std::string resolveResourcePath(const std::string& configured) {
     }
     std::vector<std::filesystem::path> candidates;
     if (!exeDir.empty()) {
-        candidates.push_back(exeDir / "facebetter_resources" / "resource.fbd");
+        // exeDir = <repo>/build/<preset>/Release (or /Debug)
+        candidates.push_back(exeDir / "facebetter_resources" / "resource.fbd"); // shipped
         candidates.push_back(exeDir / "resource" / "resource.fbd");
-        candidates.push_back(exeDir / ".." / ".." / ".." / ".." / "sdk" / "facebetter" /
-                             "resource" / "resource.fbd");
+        candidates.push_back(exeDir / ".." / "facebetter_resources" / "resource.fbd");
+        candidates.push_back(exeDir / ".." / ".." / "facebetter_resources" /
+                             "resource.fbd"); // configure-time file(COPY) target
+        candidates.push_back(exeDir / ".." / ".." / ".." / "sdk" / "facebetter" /
+                             "resource" / "resource.fbd"); // source tree
     }
     for (const auto& c : candidates) {
         std::error_code ec;
