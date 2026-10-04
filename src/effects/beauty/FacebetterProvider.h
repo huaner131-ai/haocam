@@ -77,6 +77,7 @@ public:
     void reset() override;
     BeautyConfig config() const override;
     Features features() const override { return Features{}; } // all supported per SDK docs
+    BeautyResult process(const Frame& input, const FaceData& face) override;
 
     // Asynchronous processing path (spec section 21 - the SDK processes
     // frames on its own GL thread; HaoCam mirrors that with this worker).

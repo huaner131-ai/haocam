@@ -73,9 +73,17 @@ bool EffectManager::initialize(const EffectContext& context) {
     m_tracking = std::make_unique<TrackingWorker>(createDefaultTracker(),
                                                   std::move(pixelSource));
 
-    // ---- Beauty provider (HuanFace takes priority when enabled) ----
+    // ---- Beauty provider selection ----
+    // Facebetter (GPU engine) wins when it is enabled AND has credentials;
+    // HuanFace (CPU reference engine) is the fallback when enabled.
+#if defined(HAOCAM_HAS_FACEBETTER)
+    const bool facebetterPreferred =
+        m_beautySettings.enabled && m_beautySettings.hasCredentials();
+#else
+    const bool facebetterPreferred = false;
+#endif
 #if defined(HAOCAM_HAS_HUANFACE)
-    if (m_huanfaceSettings.enabled) {
+    if (!facebetterPreferred && m_huanfaceSettings.enabled) {
         auto huanface = std::make_unique<HuanFaceProvider>();
         huanface->configure(context.device, context.texturePool);
         m_beauty = std::move(huanface);

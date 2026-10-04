@@ -14,8 +14,6 @@ compile_commands.json
 generated/
 
 # SDK drop-in directories (never commit proprietary SDKs)
-sdk/facebetter/*
-!sdk/facebetter/README.md
 sdk/openmakeup/*
 !sdk/openmakeup/README.md
 sdk/snap/*

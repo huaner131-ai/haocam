@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <cstring>
+#include <filesystem>
+#include <vector>
 
 #include "core/events/EventBus.h"
 #include "core/events/Events.h"
@@ -99,9 +101,9 @@ void FacebetterProvider::shutdown() {
     }
     if (m_thread.joinable()) m_thread.join();
 
-    auto* engine = static_cast<facebetter::BeautyEffectEngine*>(m_engine);
+    auto* engine = static_cast<std::shared_ptr<facebetter::BeautyEffectEngine>*>(m_engine);
     if (engine) {
-        engine.reset(); // shared_ptr release on the owning thread
+        delete engine; // releases the shared_ptr (and the engine) on the owning thread
     }
     m_engine = nullptr;
     m_copier.reset();
@@ -223,6 +225,33 @@ bool FacebetterProvider::latestOutput(GpuTextureRef& outTexture,
     return true;
 }
 
+namespace {
+// EngineConfig::resource_path must point at resource.fbd. When the user left
+// it empty in config.json, try the CMake-shipped location first
+// (<exeDir>/facebetter_resources/resource.fbd), then a couple of dev-tree
+// fallbacks - the error message stays honest if none exists.
+std::string resolveResourcePath(const std::string& configured) {
+    if (!configured.empty()) return configured;
+    char exePath[MAX_PATH] = {};
+    std::filesystem::path exeDir;
+    if (GetModuleFileNameA(nullptr, exePath, MAX_PATH) > 0) {
+        exeDir = std::filesystem::path(exePath).parent_path();
+    }
+    std::vector<std::filesystem::path> candidates;
+    if (!exeDir.empty()) {
+        candidates.push_back(exeDir / "facebetter_resources" / "resource.fbd");
+        candidates.push_back(exeDir / "resource" / "resource.fbd");
+        candidates.push_back(exeDir / ".." / ".." / ".." / ".." / "sdk" / "facebetter" /
+                             "resource" / "resource.fbd");
+    }
+    for (const auto& c : candidates) {
+        std::error_code ec;
+        if (std::filesystem::exists(c, ec)) return c.string();
+    }
+    return {};
+}
+} // namespace
+
 bool FacebetterProvider::createEngineLocked() {
     // ---- Engine creation on the beauty thread (SDK-managed GL context,
     // external_context=false per official docs) ----
@@ -238,7 +267,14 @@ bool FacebetterProvider::createEngineLocked() {
     if (!m_settings.licenseToken.empty()) {
         engineConfig.license_token = m_settings.licenseToken;
     }
-    engineConfig.resource_path = m_settings.resourcePath;
+    engineConfig.resource_path = resolveResourcePath(m_settings.resourcePath);
+    if (engineConfig.resource_path.empty()) {
+        setStatus("Unavailable: resource.fbd not found (set facebetter.resource_path "
+                  "in config.json)",
+                  false);
+        return false;
+    }
+    HAOCAM_LOG_INFO(kCategory, "Facebetter resource: {}", engineConfig.resource_path);
     engineConfig.external_context = false;
 
     std::shared_ptr<facebetter::BeautyEffectEngine> engine =
@@ -282,7 +318,7 @@ bool FacebetterProvider::createEngineLocked() {
 
 void FacebetterProvider::applyConfigToEngine(const BeautyConfig& config) {
     auto* engine =
-        *static_cast<std::shared_ptr<facebetter::BeautyEffectEngine>*>(m_engine);
+        static_cast<std::shared_ptr<facebetter::BeautyEffectEngine>*>(m_engine)->get();
     if (!engine) return;
 
     // Skin parameters ([0,1] -> [0,1], documented API).
@@ -386,7 +422,8 @@ void FacebetterProvider::run() {
         frame->type = facebetter::FrameType::Video;
 
         auto* engine =
-            *static_cast<std::shared_ptr<facebetter::BeautyEffectEngine>*>(m_engine);
+            static_cast<std::shared_ptr<facebetter::BeautyEffectEngine>*>(m_engine)->get();
+        if (!engine) continue;
         const auto processStart = std::chrono::steady_clock::now();
         auto output = engine->ProcessImage(frame);
         const auto processEnd = std::chrono::steady_clock::now();

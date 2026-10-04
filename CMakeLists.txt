@@ -247,6 +247,17 @@ if(HAOCAM_HAS_FACEBETTER)
                 "${HAOCAM_FACEBETTER_DIR}/lib/facebetter.dll"
                 "${HAOCAM_FB_DLL_DEST}/facebetter.dll")
     endif()
+    # Ship the engine resources (resource.fbd is REQUIRED by EngineConfig).
+    file(GLOB HAOCAM_FB_RESOURCES "${HAOCAM_FACEBETTER_DIR}/resource/*.fbd")
+    if(HAOCAM_BUILD_APP)
+        set(HAOCAM_FB_RES_DEST "$<TARGET_FILE_DIR:haocam>/facebetter_resources")
+    else()
+        set(HAOCAM_FB_RES_DEST "$<TARGET_FILE_DIR:haocam_core>/facebetter_resources")
+    endif()
+    foreach(_fbd ${HAOCAM_FB_RESOURCES})
+        add_custom_command(TARGET haocam_core POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_fbd}" "${HAOCAM_FB_RES_DEST}/")
+    endforeach()
 endif()
 
 if(HAOCAM_HAS_MEDIAPIPE)

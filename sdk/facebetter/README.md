@@ -1,25 +1,28 @@
-# Facebetter SDK drop-in (Phase 2)
+# Facebetter SDK (vendored)
 
-Proprietary SDK - NEVER committed (see sdk/README.md and the root .gitignore).
+Vendored from the user's upload (repo `main`, folder `FacebetterSDK`) and
+kept under the layout the HaoCam build expects:
 
-Expected layout for HAOCAM_ENABLE_FACEBETTER=ON (official quick start,
-docs.facebetter.net/windows/quick-start):
+    sdk/facebetter/include/facebetter/*.h   (public API headers)
+    sdk/facebetter/lib/facebetter.lib       (link)
+    sdk/facebetter/lib/facebetter.dll       (runtime - copied next to the exe by the build)
+    sdk/facebetter/resource/*.fbd           (engine resources - copied next to the exe as facebetter_resources/)
 
-    sdk/facebetter/
-    ├── include/
-    │   └── facebetter/
-    │       ├── beauty_effect_engine.h
-    │       ├── beauty_params.h
-    │       ├── image_frame.h
-    │       └── type_defines.h
-    ├── lib/
-    │   ├── facebetter.lib
-    │   └── facebetter.dll
-    └── resource/
-        └── resource.fbd        (models/assets - required by the engine)
+Enable:
 
-Credentials go into %LOCALAPPDATA%/HaoCam/config.json (see
-config.example.json). resource_path defaults to
-sdk/facebetter/resource/resource.fbd when left empty.
+    cmake --preset windows-base -DHAOCAM_ENABLE_HUANFACE=ON -DHAOCAM_ENABLE_FACEBETTER=ON
 
-Without the drop-in, HaoCam builds fine and Beauty reports Unavailable.
+config.json (%LOCALAPPDATA%\HaoCam\config.json):
+
+    "facebetter": {
+        "enabled": true,
+        "app_id": "...",       // or leave empty and use license_token
+        "app_key": "...",
+        "license_token": "",
+        "resource_path": ""    // empty = auto (<exeDir>/facebetter_resources/resource.fbd)
+    }
+
+When facebetter has credentials it takes priority over the HuanFace CPU
+provider (GPU engine, full framerate, reshape features actually supported).
+Without credentials the provider reports the exact reason in the Beauty
+status line (honest Unavailable).
