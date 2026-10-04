@@ -57,6 +57,7 @@ void EngineController::setSettings(std::shared_ptr<core::AppSettings> settings) 
 void EngineController::setAppConfig(const core::AppConfig& config) {
     m_appConfig = config;
     m_effects->setBeautySettings(config.facebetter);
+    m_effects->setHuanfaceSettings(config.huanface);
     m_effects->setTrackingSettings(config.tracking);
 }
 

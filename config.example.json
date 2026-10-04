@@ -15,5 +15,8 @@
   },
   "beauty": {
     "maxProcessFps": 30
+  },
+  "huanface": {
+    "enabled": false
   }
 }

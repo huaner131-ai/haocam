@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 project(HaoCam
     VERSION 0.2.0
     DESCRIPTION "HaoCam - a modern Windows beauty camera"
-    LANGUAGES CXX)
+    LANGUAGES C CXX) # C: miniz.c in the optional HuanFace SDK drop
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,6 +14,7 @@ option(HAOCAM_BUILD_APP        "Build the Qt/QML desktop application"           
 option(HAOCAM_BUILD_TESTS      "Build unit tests"                                ON)
 option(HAOCAM_ENABLE_FACEBETTER     "Enable the Facebetter beauty provider"      OFF)
 option(HAOCAM_ENABLE_MEDIAPIPE      "Enable the MediaPipe face tracker"          OFF)
+option(HAOCAM_ENABLE_HUANFACE       "Enable the HuanFace beauty provider"        OFF)
 option(HAOCAM_ENABLE_OPENMAKEUP     "Enable the OpenMakeup provider (web)"       OFF)
 option(HAOCAM_ENABLE_SNAP           "Enable the Snap Camera Kit AR provider"     OFF)
 option(HAOCAM_ENABLE_FFMPEG         "Enable the FFmpeg recording backend"        OFF)
@@ -158,6 +159,60 @@ endif()
 add_library(haocam_core STATIC ${HAOCAM_CORE_SOURCES} ${HAOCAM_CORE_HEADERS})
 target_include_directories(haocam_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_definitions(haocam_core PRIVATE HAOCAM_CORE_LIBRARY)
+
+# ---- HuanFace SDK (optional; user's own SDK, drop-in under sdk/huanface/sdk) ----
+set(HAOCAM_HUANFACE_DROP "${CMAKE_CURRENT_SOURCE_DIR}/sdk/huanface/sdk")
+if(HAOCAM_ENABLE_HUANFACE AND NOT EXISTS ${HAOCAM_HUANFACE_DROP}/include/huanface_c_api.h)
+    message(FATAL_ERROR "HAOCAM_ENABLE_HUANFACE=ON but the SDK drop is missing: "
+        "expected ${HAOCAM_HUANFACE_DROP}/include/huanface_c_api.h (see sdk/huanface/README.md)")
+endif()
+if(HAOCAM_ENABLE_HUANFACE)
+    set(HUANFACE_SDK_SOURCES
+        ${HAOCAM_HUANFACE_DROP}/src/core/result.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/core/c_api.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/frame/frame.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/bundle/manifest.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/bundle/zip_reader.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/bundle/bundle_reader.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/bundle/resource_manager.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/rendering/render_backend.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/platform/filesystem.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/platform/clock.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/image/image_loader.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/face/simple_face_tracker.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/face/face_detector.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/face/landmark_estimator.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/face/face_mesh_generator.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/face/pose_estimator.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/face/tracking_state.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/face/inference_backend.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/face/production_face_tracker.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/makeup/face_mask.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/makeup/makeup_engine.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/makeup/makeup_mask.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/makeup/makeup_renderer.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/makeup/blend_modes.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/beauty/beauty_mask.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/beauty/beauty_renderer.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/beauty/beauty_effect.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/beauty/skin_filter.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/beauty/beauty_pipeline.cpp
+        ${HAOCAM_HUANFACE_DROP}/third_party/miniz/miniz.c
+    )
+    add_library(huanface_sdk STATIC ${HUANFACE_SDK_SOURCES})
+    target_include_directories(huanface_sdk PUBLIC
+        ${HAOCAM_HUANFACE_DROP}/include
+        ${HAOCAM_HUANFACE_DROP}/src)
+    # miniz: use the vendored tinfl (no system zlib dependency).
+    target_compile_definitions(huanface_sdk PUBLIC HF_USE_ZLIB_FOR_MINIZ=0 NOMINMAX WIN32_LEAN_AND_MEAN)
+    if(WIN32)
+        target_link_libraries(huanface_sdk PUBLIC d3d11 dxgi d3dcompiler)
+    endif()
+    target_link_libraries(haocam_core PUBLIC huanface_sdk)
+    target_compile_definitions(haocam_core PUBLIC HAOCAM_HAS_HUANFACE)
+    target_sources(haocam_core PRIVATE src/effects/beauty/huanface/HuanFaceProvider.cpp)
+    message(STATUS "HuanFace SDK found - beauty provider enabled (HAOCAM_HAS_HUANFACE)")
+endif()
 
 if(WIN32)
     # Embed HLSL shaders as C headers so the binary has no runtime file

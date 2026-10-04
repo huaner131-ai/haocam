@@ -26,4 +26,9 @@ target_compile_definitions(haocam_tests PRIVATE
     HAOCAM_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 
+if(TARGET huanface_sdk)
+    target_compile_definitions(haocam_tests PRIVATE HAOCAM_HAS_HUANFACE)
+    target_sources(haocam_tests PRIVATE HuanFaceProviderTests.cpp)
+endif()
+
 add_test(NAME haocam_tests COMMAND haocam_tests)

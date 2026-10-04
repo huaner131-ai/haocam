@@ -46,8 +46,13 @@ struct TrackingSettings {
     float smoothingBeta = 0.007f;
 };
 
+struct HuanfaceSettings {
+    bool enabled = false; // HuanFace (user's own SDK) - no credentials needed
+};
+
 struct AppConfig {
     FacebetterSettings facebetter;
+    HuanfaceSettings huanface;
     TrackingSettings tracking;
     float beautyMaxProcessFps = 30.0f;
 

@@ -42,6 +42,7 @@ public:
 
     // Configuration (call before initialize; thread-neutral).
     void setBeautySettings(const core::FacebetterSettings& settings);
+    void setHuanfaceSettings(const core::HuanfaceSettings& settings);
     void setTrackingSettings(const core::TrackingSettings& settings);
 
     // Creates the tracking worker and the beauty provider. Missing SDKs are
@@ -103,6 +104,7 @@ private:
 #endif
 
     core::FacebetterSettings m_beautySettings;
+    core::HuanfaceSettings m_huanfaceSettings;
     core::TrackingSettings m_trackingSettings;
     EffectGraph m_graph;
     FaceTrackingResult m_latestTracking; // engine thread only

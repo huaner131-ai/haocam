@@ -1,0 +1,75 @@
+diff --git a/sdk/src/core/c_api.cpp b/sdk/src/core/c_api.cpp
+index 298be4a..fddc883 100644
+--- a/sdk/src/core/c_api.cpp
++++ b/sdk/src/core/c_api.cpp
+@@ -605,8 +605,69 @@ HFResult HF_ProcessFrame(HFEngine engine, const HFFrameC* inputFrame, HFFrameC*
+             engine->maskGenerator->GenerateFeatureMask(face, huanface::FeatureMaskType::LIP, inputImage.width, inputImage.height, lipMask, maskError);
+         }
+ 
+-        // Beauty pass-through (no effect for Phase 4 minimal)
++        // BEAUTY: run the real beauty engine (CPU reference path) with the
++        // generic "beauty.*" float parameters set through HF_SetParameterFloat
++        // (names per HFBeautyParameters::ToFloatMap). Zero retouch intensity
++        // keeps a cheap pass-through; failures degrade to pass-through.
+         huanface::HFImage beautified = inputImage;
++        if (engine->beautyEngine && engine->beautyEngine->GetFullEngine()) {
++            huanface::HFBeautyParameters bp;
++            auto applyF = [&](const char* name, float& target) {
++                auto it = engine->floatParams.find(name);
++                if (it != engine->floatParams.end()) target = it->second;
++            };
++            auto applyB = [&](const char* name, bool& target) {
++                auto it = engine->floatParams.find(name);
++                if (it != engine->floatParams.end()) target = (it->second != 0.0f);
++            };
++            applyB("beauty.enabled", bp.enabled);
++            applyF("beauty.globalIntensity", bp.globalIntensity);
++            applyF("beauty.opacity", bp.opacity);
++            applyB("beauty.smoothing.enabled", bp.smoothing.enabled);
++            applyF("beauty.smoothing.intensity", bp.smoothing.intensity);
++            applyF("beauty.smoothing.radius", bp.smoothing.radius);
++            applyF("beauty.smoothing.opacity", bp.smoothing.opacity);
++            applyF("beauty.smoothing.edgePreservation", bp.smoothing.edgePreservation);
++            applyB("beauty.texture.enabled", bp.texture.enabled);
++            applyF("beauty.texture.intensity", bp.texture.intensity);
++            applyF("beauty.texture.preservation", bp.texture.preservation);
++            applyF("beauty.texture.opacity", bp.texture.opacity);
++            applyB("beauty.blemish.enabled", bp.blemish.enabled);
++            applyF("beauty.blemish.intensity", bp.blemish.intensity);
++            applyF("beauty.blemish.radius", bp.blemish.radius);
++            applyF("beauty.blemish.opacity", bp.blemish.opacity);
++            applyB("beauty.tone.enabled", bp.tone.enabled);
++            applyF("beauty.tone.intensity", bp.tone.intensity);
++            applyF("beauty.tone.temperature", bp.tone.temperature);
++            applyF("beauty.tone.tint", bp.tone.tint);
++            applyF("beauty.tone.saturation", bp.tone.saturation);
++            applyF("beauty.tone.opacity", bp.tone.opacity);
++            applyB("beauty.brightness.enabled", bp.brightness.enabled);
++            applyF("beauty.brightness.intensity", bp.brightness.intensity);
++            applyF("beauty.brightness.opacity", bp.brightness.opacity);
++            applyB("beauty.contrast.enabled", bp.contrast.enabled);
++            applyF("beauty.contrast.intensity", bp.contrast.intensity);
++            applyF("beauty.contrast.opacity", bp.contrast.opacity);
++            applyB("beauty.retouch.enabled", bp.retouch.enabled);
++            applyF("beauty.retouch.intensity", bp.retouch.intensity);
++            applyF("beauty.retouch.smoothing", bp.retouch.smoothing);
++            applyF("beauty.retouch.texture", bp.retouch.texture);
++            applyF("beauty.retouch.blemish", bp.retouch.blemish);
++            applyF("beauty.retouch.tone", bp.retouch.tone);
++            applyF("beauty.retouch.brightness", bp.retouch.brightness);
++            applyF("beauty.retouch.contrast", bp.retouch.contrast);
++            applyF("beauty.retouch.opacity", bp.retouch.opacity);
++            if (bp.enabled && !huanface::IsBeautyIntensityZero(bp.retouch.intensity)) {
++                huanface::HFImage beautyOut;
++                std::string beautyError;
++                const HFResult beautyRes = engine->beautyEngine->GetFullEngine()->ProcessCPU(
++                    inputImage, tracking, bp, beautyOut, beautyError);
++                if (beautyRes == HF_RESULT_OK && !beautyOut.data.empty()) {
++                    beautified = std::move(beautyOut);
++                }
++                // On failure: keep pass-through (the pipeline must never break).
++            }
++        }
+ 
+         // Makeup params from engine
+         huanface::MakeupParams makeupParams;

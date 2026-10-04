@@ -93,6 +93,11 @@ real Windows runs:
 
 ## Pending checklist (not yet verified on the user machine)
 
+* [x] Camera auto-select fixes + resolution/mirror polish pushed (310b313)
+* [x] HuanFace SDK (user's own) integrated behind HAOCAM_ENABLE_HUANFACE:
+      provider engine lifecycle verified in CI (64/64 with SDK drop,
+      63/63 without); needs a user-side run with the SDK drop + wiring patch
+      (patches/huanface/0001) for the visual check
 * [ ] Mirror toggle visibly flips the preview (fix pushed, needs a run)
 * [ ] "Auto" resolution = device native best; resolution switch without
       flicker on re-select (fix pushed, needs a run)

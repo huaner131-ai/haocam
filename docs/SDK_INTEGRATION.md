@@ -57,3 +57,23 @@ any integration work (spec section 37). Re-verify at integration time.
   (`%LOCALAPPDATA%/HaoCam/settings.json`); `sdk/` contents are gitignored.
 * Every SDK slot has a functional placeholder that reports Unavailable so
   the rest of HaoCam keeps working.
+
+
+## HuanFace (optional, `HAOCAM_ENABLE_HUANFACE=ON`)
+
+The user's own SDK (github.com/hanlimzie-glitch/HuanFace). Integrated via the
+PUBLIC C ABI only. Full instructions: `sdk/huanface/README.md`.
+
+- Drop the SDK under `sdk/huanface/sdk`, build with `-DHAOCAM_ENABLE_HUANFACE=ON`
+- Enable at runtime with `{"huanface": {"enabled": true}}` in config.json
+  (no credentials needed)
+- IMPORTANT: apply `patches/huanface/0001-wire-beauty-engine-into-HF_ProcessFrame.patch`
+  to the HuanFace checkout - without it the C-API pipeline leaves beauty as a
+  pass-through (tracking + makeup only)
+- Parameter mapping (documented in HuanFaceProvider.h): smoothing ->
+  beauty.smoothing.intensity, whitening -> beauty.brightness.intensity,
+  rosy -> beauty.tone.tint/intensity, sharpen -> beauty.texture.intensity;
+  reshape (faceSlim/eyeSize/noseSize/jawSlim) NOT supported by the SDK yet -
+  reported as unsupported, never faked
+- The SDK tracks faces internally (heuristic fallback without ONNX models);
+  status is reported honestly in the Beauty provider status line

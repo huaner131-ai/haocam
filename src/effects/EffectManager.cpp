@@ -10,6 +10,9 @@
 #ifdef HAOCAM_HAS_FACEBETTER
 #include "effects/beauty/FacebetterProvider.h"
 #endif
+#if defined(HAOCAM_HAS_HUANFACE)
+#include "effects/beauty/huanface/HuanFaceProvider.h"
+#endif
 
 #ifdef _WIN32
 #include "face/MediaPipePixelSource.h"
@@ -35,6 +38,10 @@ EffectManager::~EffectManager() { shutdown(); }
 
 void EffectManager::setBeautySettings(const core::FacebetterSettings& settings) {
     m_beautySettings = settings;
+}
+
+void EffectManager::setHuanfaceSettings(const core::HuanfaceSettings& settings) {
+    m_huanfaceSettings = settings;
 }
 
 void EffectManager::setTrackingSettings(const core::TrackingSettings& settings) {
@@ -66,24 +73,33 @@ bool EffectManager::initialize(const EffectContext& context) {
     m_tracking = std::make_unique<TrackingWorker>(createDefaultTracker(),
                                                   std::move(pixelSource));
 
-    // ---- Beauty provider ----
-#ifdef HAOCAM_HAS_FACEBETTER
-    auto facebetter = std::make_unique<FacebetterProvider>();
-    facebetter->configure(m_beautySettings, context.device, context.texturePool);
-    FacebetterProvider* facebetterPtr = facebetter.get();
-    m_beauty = std::move(facebetter);
-    (void)facebetterPtr;
-#else
-    if (m_beautySettings.enabled) {
-        m_beauty = std::make_unique<NullBeautyProvider>(
-            "Unavailable: Facebetter SDK not compiled in (drop the SDK under "
-            "sdk/facebetter and build with HAOCAM_ENABLE_FACEBETTER=ON)");
-    } else {
-        m_beauty = std::make_unique<NullBeautyProvider>(
-            "Unavailable: not configured (add credentials to config.json and "
-            "set facebetter.enabled=true)");
+    // ---- Beauty provider (HuanFace takes priority when enabled) ----
+#if defined(HAOCAM_HAS_HUANFACE)
+    if (m_huanfaceSettings.enabled) {
+        auto huanface = std::make_unique<HuanFaceProvider>();
+        huanface->configure(context.device, context.texturePool);
+        m_beauty = std::move(huanface);
     }
 #endif
+    if (!m_beauty) {
+#ifdef HAOCAM_HAS_FACEBETTER
+        auto facebetter = std::make_unique<FacebetterProvider>();
+        facebetter->configure(m_beautySettings, context.device, context.texturePool);
+        FacebetterProvider* facebetterPtr = facebetter.get();
+        m_beauty = std::move(facebetter);
+        (void)facebetterPtr;
+#else
+        if (m_beautySettings.enabled) {
+            m_beauty = std::make_unique<NullBeautyProvider>(
+                "Unavailable: Facebetter SDK not compiled in (drop the SDK under "
+                "sdk/facebetter and build with HAOCAM_ENABLE_FACEBETTER=ON)");
+        } else {
+            m_beauty = std::make_unique<NullBeautyProvider>(
+                "Unavailable: not configured (add huanface.enabled=true with the "
+                "HuanFace SDK drop, or facebetter credentials to config.json)");
+        }
+#endif
+    }
 
     if (auto* nullBeauty = dynamic_cast<NullBeautyProvider*>(m_beauty.get())) {
         (void)nullBeauty; // status text is carried by the provider itself
@@ -105,8 +121,10 @@ bool EffectManager::initialize(const EffectContext& context) {
     m_graph.setStageEnabled(EffectStage::FaceTracking,
                             m_trackingSettings.enabled &&
                                 m_tracking->start(trackingConfig()));
-    m_graph.setStageEnabled(EffectStage::Beauty, m_beauty != nullptr &&
-                                                    m_beautySettings.enabled);
+    m_graph.setStageEnabled(EffectStage::Beauty,
+                            m_beauty != nullptr &&
+                                (m_beautySettings.enabled ||
+                                 m_huanfaceSettings.enabled));
     m_graph.setStageEnabled(EffectStage::FinalComposite, true);
     m_graph.setStageEnabled(EffectStage::Outputs, true);
 

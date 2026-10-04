@@ -21,6 +21,10 @@ JsonValue AppConfig::toJson() const {
     fb.set("resource_path", JsonValue(facebetter.resourcePath));
     root.set("facebetter", std::move(fb));
 
+    JsonValue hf = JsonValue::makeObject();
+    hf.set("enabled", JsonValue(huanface.enabled));
+    root.set("huanface", std::move(hf));
+
     JsonValue trackingJson = JsonValue::makeObject();
     trackingJson.set("enabled", JsonValue(tracking.enabled));
     trackingJson.set("maxFps", JsonValue(static_cast<double>(tracking.maxFps)));
@@ -45,6 +49,9 @@ AppConfig AppConfig::fromJson(const JsonValue& json) {
     config.facebetter.appKey = fb.at("app_key").asString();
     config.facebetter.licenseToken = fb.at("license_token").asString();
     config.facebetter.resourcePath = fb.at("resource_path").asString();
+
+    const JsonValue& hf = json.at("huanface");
+    config.huanface.enabled = hf.at("enabled").asBool(false);
 
     const JsonValue& tracking = json.at("tracking");
     config.tracking.enabled = tracking.at("enabled").asBool(true);
