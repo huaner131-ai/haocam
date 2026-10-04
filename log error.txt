@@ -1,13 +1,45 @@
 PS C:\Users\fourk\source\repos> cd D:\cam\haocam
-PS D:\cam\haocam> cmake --preset windows -DHAOCAM_ENABLE_HUANFACE=ON
-CMake Error: No such configure preset in D:/cam/haocam: "windows"
-Available configure presets:
-
-  "windows-base"  - HaoCam Windows (Visual Studio 2022)
-  "windows-ninja" - HaoCam Windows (Ninja + cl)
-PS D:\cam\haocam> cd D:\cam\haocam
-PS D:\cam\haocam> cmake --preset windows-base -DHAOCAM_ENABLE_HUANFACE=ON
+PS D:\cam\haocam> git pull
+remote: Enumerating objects: 47, done.
+remote: Counting objects: 100% (47/47), done.
+remote: Compressing objects: 100% (22/22), done.
+remote: Total 33 (delta 13), reused 13 (delta 10), pack-reused 0 (from 0)
+Unpacking objects: 100% (33/33), 27.56 MiB | 10.48 MiB/s, done.
+From https://github.com/huaner131-ai/haocam
+   cfb3e44..72d6c78  arena/01a0de8b-haocam -> origin/arena/01a0de8b-haocam
+   627c4e8..40c8ad3  main                  -> origin/main
+Updating cfb3e44..72d6c78
+Fast-forward
+ .gitignore                                         |   2 -
+ CMakeLists.txt                                     |  11 +
+ sdk/facebetter/README.md                           |  43 +-
+ .../include/facebetter/beauty_effect_engine.h      | 432 +++++++++++++
+ sdk/facebetter/include/facebetter/beauty_params.h  | 228 +++++++
+ sdk/facebetter/include/facebetter/fb_c_api.h       | 688 +++++++++++++++++++++
+ sdk/facebetter/include/facebetter/image_frame.h    | 380 ++++++++++++
+ sdk/facebetter/include/facebetter/type_defines.h   | 220 +++++++
+ sdk/facebetter/lib/facebetter.dll                  | Bin 0 -> 8312320 bytes
+ sdk/facebetter/lib/facebetter.lib                  | Bin 0 -> 154636 bytes
+ sdk/facebetter/resource/resource.fbd               | Bin 0 -> 7100875 bytes
+ sdk/facebetter/resource/resource_3d.fbd            | Bin 0 -> 9681690 bytes
+ sdk/facebetter/resource/resource_body.fbd          | Bin 0 -> 8858861 bytes
+ src/effects/EffectManager.cpp                      |  12 +-
+ src/effects/beauty/FacebetterProvider.cpp          |  47 +-
+ src/effects/beauty/FacebetterProvider.h            |   1 +
+ 16 files changed, 2035 insertions(+), 29 deletions(-)
+ create mode 100644 sdk/facebetter/include/facebetter/beauty_effect_engine.h
+ create mode 100644 sdk/facebetter/include/facebetter/beauty_params.h
+ create mode 100644 sdk/facebetter/include/facebetter/fb_c_api.h
+ create mode 100644 sdk/facebetter/include/facebetter/image_frame.h
+ create mode 100644 sdk/facebetter/include/facebetter/type_defines.h
+ create mode 100644 sdk/facebetter/lib/facebetter.dll
+ create mode 100644 sdk/facebetter/lib/facebetter.lib
+ create mode 100644 sdk/facebetter/resource/resource.fbd
+ create mode 100644 sdk/facebetter/resource/resource_3d.fbd
+ create mode 100644 sdk/facebetter/resource/resource_body.fbd
+PS D:\cam\haocam> cmake --preset windows-base -DHAOCAM_ENABLE_HUANFACE=ON -DHAOCAM_ENABLE_FACEBETTER=ON
 -- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.26200.
+-- Facebetter SDK found - FacebetterProvider enabled
 -- HuanFace SDK found - beauty provider enabled (HAOCAM_HAS_HUANFACE)
 -- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR)
 -- Could NOT find WrapVulkanHeaders (missing: Vulkan_INCLUDE_DIR)
@@ -22,208 +54,17 @@ CMake Warning at C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6/QtPublicDependencyHelper
 Call Stack (most recent call first):
   C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6GuiPrivate/Qt6GuiPrivateConfig.cmake:48 (_qt_internal_show_private_module_warning)
   C:/Qt/6.11.2/msvc2022_64/lib/cmake/Qt6/Qt6Config.cmake:257 (find_package)
-  CMakeLists.txt:278 (find_package)
+  CMakeLists.txt:294 (find_package)
 
 
 -- Configuring done (1.0s)
--- Generating done (0.7s)
+-- Generating done (1.1s)
 -- Build files have been written to: D:/cam/haocam/build/windows
 PS D:\cam\haocam> cmake --build --preset windows --config Release
 MSBuild version 17.14.60+43b635718 for .NET Framework
 
-  1>Checking Build System
-  -- haocam build stamp -> c92cad0
-  Building Custom Rule D:/cam/haocam/CMakeLists.txt
-  Building Custom Rule D:/cam/haocam/CMakeLists.txt
-  Building Custom Rule D:/cam/haocam/CMakeLists.txt
-  Building Custom Rule D:/cam/haocam/CMakeLists.txt
-  Building Custom Rule D:/cam/haocam/CMakeLists.txt
-  Building Custom Rule D:/cam/haocam/CMakeLists.txt
-  result.cpp
-  c_api.cpp
-  frame.cpp
-  manifest.cpp
-  zip_reader.cpp
-  bundle_reader.cpp
-  resource_manager.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\bundle\manifest.cpp(20,1): warning C4010: single-line comment contains line-continua
-tion character [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  render_backend.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\core\c_api.cpp(520,21): warning C4189: 'bpp': local variable is initialized but not
-referenced [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  filesystem.cpp
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\algorithm(3800,24): warning C
-4244: '=': conversion from 'int' to 'char', possible loss of data [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  (compiling source file '../../sdk/huanface/sdk/src/bundle/resource_manager.cpp')
-      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\algorithm(3800,24):
-      the template instantiation context (the oldest one first) is
-          D:\cam\haocam\sdk\huanface\sdk\src\bundle\resource_manager.cpp(18,10):
-          see reference to function template instantiation '_OutIt std::transform<std::_String_iterator<std::_String_va
-  l<std::_Simple_types<_Elem>>>,std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,int(__cdecl *)(int)>
-  (const _InIt,const _InIt,_OutIt,_Fn)' being compiled
-          with
-          [
-              _OutIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
-              _Elem=char,
-              _InIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
-              _Fn=int (__cdecl *)(int)
-          ]
-
-  clock.cpp
-  image_loader.cpp
-  simple_face_tracker.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\image\image_loader.cpp(109,14): warning C4189: 'adler': local variable is initialize
-d but not referenced [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\image\image_loader.cpp(145,16): warning C4189: 'inLen': local variable is initialize
-d but not referenced [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\image\image_loader.cpp(172,106): warning C4100: 'outError': unreferenced parameter [
-D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\image\image_loader.cpp(372,29): warning C4456: declaration of 'p' hides previous loc
-al declaration [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-      D:\cam\haocam\sdk\huanface\sdk\src\image\image_loader.cpp(222,24):
-      see declaration of 'p'
-
-D:\cam\haocam\sdk\huanface\sdk\src\image\image_loader.cpp(424,18): warning C4189: 'headerSize': local variable is initi
-alized but not referenced [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\image\image_loader.cpp(509,62): warning C4146: unary minus operator applied to unsig
-ned type, result still unsigned [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\algorithm(3800,24): warning C
-4244: '=': conversion from 'int' to 'char', possible loss of data [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  (compiling source file '../../sdk/huanface/sdk/src/image/image_loader.cpp')
-      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\algorithm(3800,24):
-      the template instantiation context (the oldest one first) is
-          D:\cam\haocam\sdk\huanface\sdk\src\image\image_loader.cpp(592,10):
-          see reference to function template instantiation '_OutIt std::transform<std::_String_iterator<std::_String_va
-  l<std::_Simple_types<_Elem>>>,std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,int(__cdecl *)(int)>
-  (const _InIt,const _InIt,_OutIt,_Fn)' being compiled
-          with
-          [
-              _OutIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
-              _Elem=char,
-              _InIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
-              _Fn=int (__cdecl *)(int)
-          ]
-
-  face_detector.cpp
-  landmark_estimator.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\face\simple_face_tracker.cpp(161,61): warning C4100: 'faceTemplate': unreferenced pa
-rameter [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  face_mesh_generator.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\face\landmark_estimator.cpp(136,35): warning C4244: 'initializing': conversion from
-'int' to 'float', possible loss of data [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\landmark_estimator.cpp(204,22): warning C4244: 'initializing': conversion from
-'int' to 'float', possible loss of data [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\landmark_estimator.cpp(279,89): warning C4100: 'face': unreferenced parameter [
-D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  pose_estimator.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\face\face_detector.cpp(97,11): warning C4189: 'expectedDist': local variable is init
-ialized but not referenced [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  tracking_state.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\face\face_mesh_generator.cpp(107,78): warning C4100: 'landmarks': unreferenced param
-eter [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  inference_backend.cpp
-  production_face_tracker.cpp
-  face_mask.cpp
-  makeup_engine.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\face\pose_estimator.cpp(70,104): warning C4100: 'face': unreferenced parameter [D:\c
-am\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\pose_estimator.cpp(106,65): warning C4100: 'imageHeight': unreferenced paramete
-r [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\pose_estimator.cpp(106,49): warning C4100: 'imageWidth': unreferenced parameter
- [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  makeup_mask.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\face\inference_backend.cpp(47,99): warning C4244: 'argument': conversion from 'int'
-to '_Elem', possible loss of data [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\inference_backend.cpp(47,99): warning C4244:         with [D:\cam\haocam\build\
-windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\inference_backend.cpp(47,99): warning C4244:         [ [D:\cam\haocam\build\win
-dows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\inference_backend.cpp(47,99): warning C4244:             _Elem=char [D:\cam\hao
-cam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\inference_backend.cpp(47,99): warning C4244:         ] [D:\cam\haocam\build\win
-dows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\face\production_face_tracker.cpp(327,14): warning C4189: 'has3D': local variable is
-initialized but not referenced [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\makeup\makeup_mask.cpp(303,19): warning C4189: 'browY': local variable is initialize
-d but not referenced [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\algorithm(3800,24): warning C
-4244: '=': conversion from 'int' to 'char', possible loss of data [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-  (compiling source file '../../sdk/huanface/sdk/src/face/production_face_tracker.cpp')
-      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\algorithm(3800,24):
-      the template instantiation context (the oldest one first) is
-          D:\cam\haocam\sdk\huanface\sdk\src\face\production_face_tracker.cpp(26,10):
-          see reference to function template instantiation '_OutIt std::transform<std::_String_iterator<std::_String_va
-  l<std::_Simple_types<_Elem>>>,std::_String_iterator<std::_String_val<std::_Simple_types<_Elem>>>,int(__cdecl *)(int)>
-  (const _InIt,const _InIt,_OutIt,_Fn)' being compiled
-          with
-          [
-              _OutIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
-              _Elem=char,
-              _InIt=std::_String_iterator<std::_String_val<std::_Simple_types<char>>>,
-              _Fn=int (__cdecl *)(int)
-          ]
-
-  makeup_renderer.cpp
-  blend_modes.cpp
-  beauty_mask.cpp
-  beauty_renderer.cpp
-  beauty_effect.cpp
-  skin_filter.cpp
-  beauty_pipeline.cpp
-D:\cam\haocam\sdk\huanface\sdk\src\makeup\makeup_renderer.cpp(803,54): warning C4100: 'outOutput': unreferenced paramet
-er [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\makeup\makeup_renderer.cpp(802,91): warning C4100: 'masks': unreferenced parameter [
-D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\makeup\makeup_renderer.cpp(801,71): warning C4100: 'params': unreferenced parameter
-[D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\makeup\makeup_renderer.cpp(800,63): warning C4100: 'face': unreferenced parameter [D
-:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\makeup\makeup_renderer.cpp(799,61): warning C4100: 'input': unreferenced parameter [
-D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\makeup\makeup_renderer.cpp(905,12): warning C4189: 'dataSize': local variable is ini
-tialized but not referenced [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(279,85): warning C4100: 'face': unreferenced parameter [D
-:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(294,93): warning C4100: 'face': unreferenced parameter [D
-:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(342,92): warning C4100: 'face': unreferenced parameter [D
-:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(381,84): warning C4100: 'face': unreferenced parameter [D
-:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(438,86): warning C4100: 'face': unreferenced parameter [D
-:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(462,84): warning C4100: 'face': unreferenced parameter [D
-:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(713,188): warning C4100: 'outOutput': unreferenced parame
-ter [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(713,172): warning C4100: 'masks': unreferenced parameter
-[D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(713,118): warning C4100: 'params': unreferenced parameter
- [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(713,86): warning C4100: 'face': unreferenced parameter [D
-:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(713,61): warning C4100: 'input': unreferenced parameter [
-D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(793,119): warning C4458: declaration of 'params' hides cl
-ass member [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-      D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.h(215,24):
-      see declaration of 'huanface::FullBeautyEngine::params'
-
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(799,119): warning C4458: declaration of 'params' hides cl
-ass member [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-      D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.h(215,24):
-      see declaration of 'huanface::FullBeautyEngine::params'
-
-D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.cpp(824,117): warning C4458: declaration of 'params' hides cl
-ass member [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
-      D:\cam\haocam\sdk\huanface\sdk\src\beauty\beauty_renderer.h(215,24):
-      see declaration of 'huanface::FullBeautyEngine::params'
-
-  miniz.c
-D:\cam\haocam\sdk\huanface\sdk\third_party\miniz\miniz.c(29,62): warning C4146: unary minus operator applied to unsigne
-d type, result still unsigned [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
+  -- haocam build stamp -> 72d6c78
   huanface_sdk.vcxproj -> D:\cam\haocam\build\windows\Release\huanface_sdk.lib
-  Building Custom Rule D:/cam/haocam/CMakeLists.txt
   Logger.cpp
   Json.cpp
   AppConfig.cpp
@@ -232,13 +73,7 @@ d type, result still unsigned [D:\cam\haocam\build\windows\huanface_sdk.vcxproj]
   FramePool.cpp
   FaceLandmarks.cpp
   FaceTracking.cpp
-D:\cam\haocam\src\core\settings\AppSettings.cpp(15,30): warning C4996: 'getenv': This function or variable may be unsaf
-e. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-[D:\cam\haocam\build\windows\haocam_core.vcxproj]
   TrackingWorker.cpp
-D:\cam\haocam\src\core\settings\AppSettings.cpp(21,40): warning C4996: 'getenv': This function or variable may be unsaf
-e. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-[D:\cam\haocam\build\windows\haocam_core.vcxproj]
   EffectGraph.cpp
 D:\cam\haocam\src\core\logging\Logger.cpp(4,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\cam\haocam
 \build\windows\haocam_core.vcxproj]
@@ -250,6 +85,12 @@ ows\haocam_core.vcxproj]
       D:\cam\haocam\src\core\logging\Logger.cpp(5,9):
       'NOMINMAX' previously declared on the command line
 
+D:\cam\haocam\src\core\settings\AppSettings.cpp(15,30): warning C4996: 'getenv': This function or variable may be unsaf
+e. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[D:\cam\haocam\build\windows\haocam_core.vcxproj]
+D:\cam\haocam\src\core\settings\AppSettings.cpp(21,40): warning C4996: 'getenv': This function or variable may be unsaf
+e. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[D:\cam\haocam\build\windows\haocam_core.vcxproj]
   EffectManager.cpp
   BeautyConfig.cpp
   NullBeautyProvider.cpp
@@ -260,17 +101,6 @@ ows\haocam_core.vcxproj]
   MediaPipePixelSource.cpp
   D3D11Context.cpp
   D3D11Texture.cpp
-D:\cam\haocam\src\face\MediaPipePixelSource.cpp(11,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\cam
-\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\face\MediaPipePixelSource.cpp(11,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\face\MediaPipePixelSource.cpp(12,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\bui
-ld\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\face\MediaPipePixelSource.cpp(12,9):
-      'NOMINMAX' previously declared on the command line
-
-  D3D11Shader.cpp
 D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(15,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:
 \cam\haocam\build\windows\haocam_core.vcxproj]
       D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(15,9):
@@ -284,6 +114,27 @@ D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(16,9): warning C4005: 'NOMIN
 D:\cam\haocam\src\camera\MediaFoundationCapture.cpp(390,26): warning C4245: 'initializing': conversion from '__MIDL___M
 IDL_itf_mfreadwrite_0000_0001_0001' to 'DWORD', signed/unsigned mismatch [D:\cam\haocam\build\windows\haocam_core.vcxpr
 oj]
+  D3D11Shader.cpp
+D:\cam\haocam\src\face\MediaPipePixelSource.cpp(11,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\cam
+\haocam\build\windows\haocam_core.vcxproj]
+      D:\cam\haocam\src\face\MediaPipePixelSource.cpp(11,9):
+      'WIN32_LEAN_AND_MEAN' previously declared on the command line
+
+D:\cam\haocam\src\face\MediaPipePixelSource.cpp(12,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\bui
+ld\windows\haocam_core.vcxproj]
+      D:\cam\haocam\src\face\MediaPipePixelSource.cpp(12,9):
+      'NOMINMAX' previously declared on the command line
+
+D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(7,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\ca
+m\haocam\build\windows\haocam_core.vcxproj]
+      D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(7,9):
+      'WIN32_LEAN_AND_MEAN' previously declared on the command line
+
+D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(8,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\bu
+ild\windows\haocam_core.vcxproj]
+      D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(8,9):
+      'NOMINMAX' previously declared on the command line
+
 D:\cam\haocam\src\graphics\D3D11\D3D11Texture.cpp(5,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\ca
 m\haocam\build\windows\haocam_core.vcxproj]
       D:\cam\haocam\src\graphics\D3D11\D3D11Texture.cpp(5,9):
@@ -295,19 +146,7 @@ ild\windows\haocam_core.vcxproj]
       'NOMINMAX' previously declared on the command line
 
   D3D11TexturePool.cpp
-D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(7,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\ca
-m\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(7,9):
-      'WIN32_LEAN_AND_MEAN' previously declared on the command line
-
-D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(8,9): warning C4005: 'NOMINMAX': macro redefinition [D:\cam\haocam\bu
-ild\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\graphics\D3D11\D3D11Context.cpp(8,9):
-      'NOMINMAX' previously declared on the command line
-
   GpuFrameCopier.cpp
-  Compositor.cpp
-  RenderGraph.cpp
 D:\cam\haocam\src\graphics\D3D11\D3D11Shader.cpp(7,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\cam
 \haocam\build\windows\haocam_core.vcxproj]
       D:\cam\haocam\src\graphics\D3D11\D3D11Shader.cpp(7,9):
@@ -318,6 +157,9 @@ ld\windows\haocam_core.vcxproj]
       D:\cam\haocam\src\graphics\D3D11\D3D11Shader.cpp(8,9):
       'NOMINMAX' previously declared on the command line
 
+  Compositor.cpp
+  RenderGraph.cpp
+  FacebetterProvider.cpp
   HuanFaceProvider.cpp
 D:\cam\haocam\src\graphics\D3D11\GpuFrameCopier.cpp(8,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redefinition [D:\
 cam\haocam\build\windows\haocam_core.vcxproj]
@@ -339,102 +181,105 @@ m\build\windows\haocam_core.vcxproj]
       D:\cam\haocam\src\graphics\compositor\Compositor.cpp(12,9):
       'NOMINMAX' previously declared on the command line
 
-D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(17,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redef
+D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(18,9): warning C4005: 'WIN32_LEAN_AND_MEAN': macro redef
 inition [D:\cam\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(17,9):
+      D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(18,9):
       'WIN32_LEAN_AND_MEAN' previously declared on the command line
 
-D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(18,9): warning C4005: 'NOMINMAX': macro redefinition [D:
+D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(19,9): warning C4005: 'NOMINMAX': macro redefinition [D:
 \cam\haocam\build\windows\haocam_core.vcxproj]
-      D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(18,9):
+      D:\cam\haocam\src\effects\beauty\huanface\HuanFaceProvider.cpp(19,9):
       'NOMINMAX' previously declared on the command line
 
+D:\cam\haocam\sdk\facebetter\include\facebetter\image_frame.h(375,32): warning C4251: 'facebetter::ImageFrame::image_bu
+ffer_': 'std::shared_ptr<facebetter::ImageBuffer>' needs to have dll-interface to be used by clients of 'facebetter::Im
+ageFrame' [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+  (compiling source file '../../src/effects/beauty/FacebetterProvider.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<facebetter::ImageBuffer>'
+
   haocam_core.vcxproj -> D:\cam\haocam\build\windows\Release\haocam_core.lib
-  1>Automatic MOC and UIC for target haocam
-  Running AUTOMOC file extraction for target haocam
-  Building Custom Rule D:/cam/haocam/CMakeLists.txt
-  Running moc --collect-json for target haocam
-  Generating meta_types/qt6haocam_metatypes.json
-  Automatic QML type registration for target haocam
-  Generating .rcc/qmlcache/haocam_ui_qml_Main_qml.cpp, .rcc/qmlcache/haocam_ui_qml_Main_qml.cpp.aotstats
-  Generating .rcc/qmlcache/haocam_ui_qml_CameraView_qml.cpp, .rcc/qmlcache/haocam_ui_qml_CameraView_qml.cpp.aotstats
-  Generating .rcc/qmlcache/haocam_ui_qml_CameraPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_CameraPanel_qml.cpp.aotstats
-  Generating .rcc/qmlcache/haocam_ui_qml_BeautyPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_BeautyPanel_qml.cpp.aotstats
-  Generating .rcc/qmlcache/haocam_ui_qml_MakeupPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_MakeupPanel_qml.cpp.aotstats
-  Generating .rcc/qmlcache/haocam_ui_qml_ARPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_ARPanel_qml.cpp.aotstats
-  Generating .rcc/qmlcache/haocam_ui_qml_FilterPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_FilterPanel_qml.cpp.aotstats
-  Generating .rcc/qmlcache/haocam_ui_qml_RecordingPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_RecordingPanel_qml.cpp.aot
-  stats
-  Generating .rcc/qmlcache/haocam_ui_qml_SettingsPanel_qml.cpp, .rcc/qmlcache/haocam_ui_qml_SettingsPanel_qml.cpp.aotst
-  ats
-  main.cpp
-  App.cpp
-  EngineController.cpp
-  CameraController.cpp
-  BeautyController.cpp
-  FilterController.cpp
-  DiagnosticsController.cpp
-  VideoView.cpp
-  qrc_qmake_HaoCam.cpp
-  haocam_qmlcache_loader.cpp
-  haocam_ui_qml_Main_qml.cpp
-  haocam_ui_qml_CameraView_qml.cpp
-  haocam_ui_qml_CameraPanel_qml.cpp
-  haocam_ui_qml_BeautyPanel_qml.cpp
-C:\Qt\6.11.2\msvc2022_64\include\QtCore\qmetatype.h(502,1): warning C4702: unreachable code [D:\cam\haocam\build\window
-s\haocam.vcxproj]
-C:\Qt\6.11.2\msvc2022_64\include\QtCore\qvariant.h(723,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
-\haocam.vcxproj]
-C:\Qt\6.11.2\msvc2022_64\include\QtCore\qvariant.h(728,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
-\haocam.vcxproj]
-  haocam_ui_qml_MakeupPanel_qml.cpp
-C:\Qt\6.11.2\msvc2022_64\include\QtQml\qjsengine.h(112,1): warning C4702: unreachable code [D:\cam\haocam\build\windows
-\haocam.vcxproj]
-  haocam_ui_qml_ARPanel_qml.cpp
-  haocam_ui_qml_FilterPanel_qml.cpp
-  haocam_ui_qml_RecordingPanel_qml.cpp
-  haocam_ui_qml_SettingsPanel_qml.cpp
-  qrc_haocam_raw_qml_0.cpp
-  qrc_haocam_raw_qml_0_extra_qmldirs.cpp
-  mocs_compilation_Release.cpp
-  haocam_qmltyperegistrations.cpp
-     Creating library D:/cam/haocam/build/windows/Release/haocam.lib and object D:/cam/haocam/build/windows/Release/hao
-  cam.exp
-huanface_sdk.lib(render_backend.obj) : error LNK2019: unresolved external symbol "class std::unique_ptr<class huanface:
-:IRenderBackend,struct std::default_delete<class huanface::IRenderBackend> > __cdecl huanface::CreateD3D11Backend(void)
-" (?CreateD3D11Backend@huanface@@YA?AV?$unique_ptr@VIRenderBackend@huanface@@U?$default_delete@VIRenderBackend@huanface
-@@@std@@@std@@XZ) referenced in function "class std::unique_ptr<class huanface::IRenderBackend,struct std::default_dele
-te<class huanface::IRenderBackend> > __cdecl huanface::CreateRenderBackend(enum HFRenderBackendType)" (?CreateRenderBac
-kend@huanface@@YA?AV?$unique_ptr@VIRenderBackend@huanface@@U?$default_delete@VIRenderBackend@huanface@@@std@@@std@@W4HF
-RenderBackendType@@@Z) [D:\cam\haocam\build\windows\haocam.vcxproj]
-D:\cam\haocam\build\windows\Release\haocam.exe : fatal error LNK1120: 1 unresolved externals [D:\cam\haocam\build\windo
-ws\haocam.vcxproj]
-  test_main.cpp
-  test_Json.cpp
-  test_FrameQueue.cpp
-  test_FrameBufferPool.cpp
-  test_CameraFormat.cpp
-  CameraDeviceTests.cpp
-  test_AppSettings.cpp
-  test_EventBus.cpp
-  test_EffectGraph.cpp
-  FaceDataTests.cpp
-  LandmarkSmootherTests.cpp
-  FaceTrackingTests.cpp
-  BeautyProviderTests.cpp
-  AppConfigTests.cpp
-  HuanFaceProviderTests.cpp
-  mocs_compilation_Release.cpp
-D:\cam\haocam\tests\AppConfigTests.cpp(24,15): warning C4996: 'fopen': This function or variable may be unsafe. Conside
-r using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\cam\haoc
-am\build\windows\tests\haocam_tests.vcxproj]
-huanface_sdk.lib(render_backend.obj) : error LNK2019: unresolved external symbol "class std::unique_ptr<class huanface:
-:IRenderBackend,struct std::default_delete<class huanface::IRenderBackend> > __cdecl huanface::CreateD3D11Backend(void)
-" (?CreateD3D11Backend@huanface@@YA?AV?$unique_ptr@VIRenderBackend@huanface@@U?$default_delete@VIRenderBackend@huanface
-@@@std@@@std@@XZ) referenced in function "class std::unique_ptr<class huanface::IRenderBackend,struct std::default_dele
-te<class huanface::IRenderBackend> > __cdecl huanface::CreateRenderBackend(enum HFRenderBackendType)" (?CreateRenderBac
-kend@huanface@@YA?AV?$unique_ptr@VIRenderBackend@huanface@@U?$default_delete@VIRenderBackend@huanface@@@std@@@std@@W4HF
-RenderBackendType@@@Z) [D:\cam\haocam\build\windows\tests\haocam_tests.vcxproj]
-D:\cam\haocam\build\windows\Release\haocam_tests.exe : fatal error LNK1120: 1 unresolved externals [D:\cam\haocam\build
-\windows\tests\haocam_tests.vcxproj]
-PS D:\cam\haocam>
+  Error copying file (if different) from "D:/cam/haocam/sdk/facebetter/resource/resource.fbd" to "D:/cam/haocam/build/w
+  indows/Release/facebetter_resources/": No such file or directory
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: The command "setlocal [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different D:/cam/haocam/sdk/facebetter/lib/facebetter.d
+ll D:/cam/haocam/build/windows/Release/facebetter.dll [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone [D:\cam\haocam\build\windows\haocam_core.vcxpro
+j]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmErrorLevel [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: exit /b %1 [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmDone [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: setlocal [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different D:/cam/haocam/sdk/facebetter/resource/resourc
+e.fbd D:/cam/haocam/build/windows/Release/facebetter_resources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone [D:\cam\haocam\build\windows\haocam_core.vcxpro
+j]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmErrorLevel [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: exit /b %1 [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmDone [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: setlocal [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different D:/cam/haocam/sdk/facebetter/resource/resourc
+e_3d.fbd D:/cam/haocam/build/windows/Release/facebetter_resources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone [D:\cam\haocam\build\windows\haocam_core.vcxpro
+j]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmErrorLevel [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: exit /b %1 [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmDone [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: setlocal [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: "C:\Program Files\CMake\bin\cmake.exe" -E copy_if_different D:/cam/haocam/sdk/facebetter/resource/resourc
+e_body.fbd D:/cam/haocam/build/windows/Release/facebetter_resources/ [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone [D:\cam\haocam\build\windows\haocam_core.vcxpro
+j]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmErrorLevel [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: exit /b %1 [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :cmDone [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\cam\haocam\build\windows\haocam_core.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(166,5): e
+rror MSB3073: :VCEnd" exited with code 1. [D:\cam\haocam\build\windows\haocam_core.vcxproj]
