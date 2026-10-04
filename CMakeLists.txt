@@ -176,6 +176,11 @@ if(HAOCAM_ENABLE_HUANFACE)
         ${HAOCAM_HUANFACE_DROP}/src/bundle/bundle_reader.cpp
         ${HAOCAM_HUANFACE_DROP}/src/bundle/resource_manager.cpp
         ${HAOCAM_HUANFACE_DROP}/src/rendering/render_backend.cpp
+        # Windows-only D3D11 backend (referenced by CreateRenderBackend):
+        # on Windows the two sources below are REQUIRED - without them the
+        # link fails with LNK2019 huanface::CreateD3D11Backend.
+        ${HAOCAM_HUANFACE_DROP}/src/rendering/d3d11/d3d11_backend.cpp
+        ${HAOCAM_HUANFACE_DROP}/src/rendering/d3d11/d3d11_full_pipeline.cpp
         ${HAOCAM_HUANFACE_DROP}/src/platform/filesystem.cpp
         ${HAOCAM_HUANFACE_DROP}/src/platform/clock.cpp
         ${HAOCAM_HUANFACE_DROP}/src/image/image_loader.cpp
