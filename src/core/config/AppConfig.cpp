@@ -91,9 +91,10 @@ AppConfig AppConfig::load(const std::filesystem::path& settingsDir) {
     config = fromJson(json);
     HAOCAM_LOG_INFO(kCategory,
                     "Loaded config.json (facebetter.enabled={}, credentials={}, "
-                    "tracking.enabled={})",
+                    "huanface.enabled={}, tracking.enabled={})",
                     config.facebetter.enabled,
                     config.facebetter.hasCredentials() ? "present" : "missing",
+                    config.huanface.enabled,
                     config.tracking.enabled);
     return config;
 }
